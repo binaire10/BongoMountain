@@ -1,0 +1,6 @@
+add_subdirectory(glad)
+add_subdirectory(glfw)
+add_subdirectory(spdlog)
+add_subdirectory(OpenMesh-8.1)
+add_subdirectory(stb)
+add_subdirectory(glm)
