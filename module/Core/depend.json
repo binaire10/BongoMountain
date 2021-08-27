@@ -1,0 +1,24 @@
+{
+  "library": [
+    {
+      "name": "spdlog",
+      "git_branch": "v1.9.2",
+      "git_url": "https://github.com/gabime/spdlog.git",
+      "cmake_variables": {
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "glfw",
+      "git_branch": "3.3.4",
+      "git_url": "https://github.com/glfw/glfw.git",
+      "cmake_variables": {
+        "BUILD_SHARED_LIBS": "OFF"
+      }
+    },
+    {
+      "name": "glm",
+      "git_url": "https://github.com/g-truc/glm.git"
+    }
+  ]
+}

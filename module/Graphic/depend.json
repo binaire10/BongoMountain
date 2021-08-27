@@ -1,0 +1,13 @@
+{
+  "library": [
+    {
+      "name": "stb",
+      "git_url": "https://github.com/nothings/stb.git",
+      "cmakelist_copy": "patch/stb/CMakeLists.txt"
+    },
+    {
+      "name": "glad",
+      "local_path": "patch/glad"
+    }
+  ]
+}

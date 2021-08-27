@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(GameEngineBongo)
 
+include(cmake/AutoImport.cmake)
+
 function(configure_binary_output target)
     set_target_properties(${target}
             PROPERTIES
@@ -19,9 +21,9 @@ set_target_properties(common_options
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
         )
 
-add_subdirectory(vendor)
 add_subdirectory(module)
 add_subdirectory(application)
+add_subdirectory(benchmark)
 
 configure_binary_output(BongoCore)
 configure_binary_output(BongoGraphic)

@@ -1,0 +1,14 @@
+{
+  "library": [
+    {
+      "name": "benchmark",
+      "git_branch": "v1.5.6",
+      "git_url": "https://github.com/google/benchmark.git",
+      "cmake_variables": {
+        "BENCHMARK_ENABLE_GTEST_TESTS": "OFF",
+        "BENCHMARK_ENABLE_TESTING": "OFF",
+        "BUILD_SHARED_LIBS": "OFF"
+      }
+    }
+  ]
+}
