@@ -7,11 +7,13 @@ add_subdirectory(extension)
 add_library(BongoGraphic SHARED)
 target_sources(BongoGraphic PRIVATE
         src/Graphic/config.hpp
+        src/Graphic/Texture.cpp
         src/Graphic/RenderType.hpp
+        src/Graphic/RenderCommand.hpp
         src/Graphic/Context.hpp
         src/Graphic/EventWrapper.hpp
         src/Graphic/BufferLayout.h
-        src/Graphic/BufferCounter.hpp
+        src/Graphic/BufferArray.hpp
         src/Graphic/GraphicModule.hpp
         src/Graphic/RenderSurface.hpp
         src/Graphic/GraphicApplication.hpp
@@ -43,8 +45,7 @@ target_sources(BongoGraphic PRIVATE
 use_glfw(BongoGraphic)
 use_glad(BongoGraphic)
 
-target_link_libraries(BongoGraphic PUBLIC BongoCore common_options)
+target_link_libraries(BongoGraphic PUBLIC stbi BongoCore common_options)
 target_compile_definitions(BongoGraphic PRIVATE BM_BUILD_GRAPHIC)
 target_compile_definitions(BongoGraphic PUBLIC BM_SHARED_GRAPHIC)
 target_include_directories(BongoGraphic PUBLIC src)
-target_compile_features(BongoGraphic PUBLIC cxx_std_20)

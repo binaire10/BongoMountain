@@ -1,0 +1,9 @@
+#ifndef GAMEENGINEBONGO_TEXTUREFORMAT_HPP
+#define GAMEENGINEBONGO_TEXTUREFORMAT_HPP
+
+namespace Graphic
+{
+    enum class TextureFormat { RGB_8bit, RGB_16bit, RGB_32bit, RGBA_8bit, RGBA_16bit, RGBA_32bit, UNSPECIFIED };
+}
+
+#endif// GAMEENGINEBONGO_TEXTUREFORMAT_HPP
