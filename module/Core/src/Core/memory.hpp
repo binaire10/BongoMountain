@@ -3,6 +3,7 @@
 
 #ifdef _MSC_BUILD
 #    include <malloc.h>
+#    include <Core/Assert.hpp>
 
 namespace
 {
@@ -39,5 +40,15 @@ namespace
         T        name##__LINE__[space];    \
         T *const name = name##__LINE__
 #endif
+
+template<typename Callback, typename CharT, typename TraitT>
+auto fixe_string(std::basic_string_view<CharT, TraitT> str, Callback f) {
+    if(!TraitT::eq(*(str.data() + str.size()), TraitT::to_char_type(0))) {
+        BM_STACK_ARRAY(CharT, fixed, str.size() + 1);
+        *std::copy(str.begin(), str.end(), fixed) = TraitT::to_char_type(0);
+        return f(std::basic_string_view<CharT, TraitT>{fixed, str.size()});
+    }
+    return f(str);
+}
 
 #endif// GAMEENGINEBONGO_MEMORY_HPP
