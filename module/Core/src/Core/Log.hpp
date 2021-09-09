@@ -26,12 +26,14 @@ private:
 
 #define BM_ERROR   Log::appLogger()->error
 #define BM_WARNING Log::appLogger()->warn
+#define BM_CRITICAL Log::appLogger()->critical
 #define BM_TRACE   Log::appLogger()->trace
 #define BM_INFO    Log::appLogger()->info
 #define BM_DEBUG   Log::appLogger()->debug
 
 #define BM_CORE_ERROR   Log::coreLogger()->error
 #define BM_CORE_WARNING Log::coreLogger()->warn
+#define BM_CORE_CRITICAL Log::coreLogger()->critical
 #define BM_CORE_TRACE   Log::coreLogger()->trace
 #define BM_CORE_INFO    Log::coreLogger()->info
 #define BM_CORE_DEBUG   Log::coreLogger()->debug
