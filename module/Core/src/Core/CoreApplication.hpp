@@ -6,37 +6,44 @@
 #define GAMEENGINEBONGO_COREAPPLICATION_HPP
 
 #include "config.hpp"
+
+#include "functional.hpp"
 #include <Event/Event.h>
 
 #include <memory>
 #include <list>
 #include <functional>
 #include <atomic>
-#include "EventListener.hpp"
 
 class BM_CORE_DCL CoreApplication
 {
 public:
+    using EventHandle = Core::function_handle<void(Event &)>;
+
     CoreApplication(const CoreApplication &) = delete;
     CoreApplication &operator=(const CoreApplication &) = delete;
 
     CoreApplication() noexcept;
     virtual ~CoreApplication() = default;
-    static void dispatchEvent(Event &event) noexcept;
-    void        dispatch(Event &event) noexcept;
+    static void        dispatchEvent(Event &event) noexcept;
+    static inline void dispatchEvent(Event &&event) noexcept { dispatchEvent(event); }
+    void               dispatch(Event &event) noexcept;
 
     int exec();
 
-    [[nodiscard]] inline const std::list<std::unique_ptr<EventListener>> &getListeners() const noexcept
+    [[nodiscard]] inline const std::list<EventHandle> &getListeners() const noexcept { return listeners; }
+
+    [[nodiscard]] inline std::list<EventHandle> &getListeners() noexcept { return listeners; }
+
+    static CoreApplication *getApp() { return app; }
+
+    inline void addListener(EventHandle &&listener) { listeners.push_back(std::move(listener)); }
+    inline void addListener(const EventHandle &listener) { listeners.push_back(listener); }
+
+    inline void removeListener(const EventHandle &listener)
     {
-        return listeners;
+        listeners.remove(listener);
     }
-
-    [[nodiscard]] inline std::list<std::unique_ptr<EventListener>> &getListeners() noexcept { return listeners; }
-    static CoreApplication *                                        getApp();
-
-    inline void addListener(std::unique_ptr<EventListener> listener) { listeners.push_back(std::move(listener)); }
-
 
     [[nodiscard]] inline bool isRunning() const noexcept { return running; }
 
@@ -46,21 +53,21 @@ public:
         running                   = false;
     }
 
-    inline std::function<void()> swapMainLoop(std::function<void()> loop)
+    inline Core::function_handle<void()> swapMainLoop(Core::function_handle<void()> loop)
     {
         std::swap(loop, mainLoop);
         return std::move(loop);
     }
 
-    inline void setMainLoop(std::function<void()> mainLoop) { CoreApplication::mainLoop = std::move(mainLoop); }
+    inline void setMainLoop(Core::function_handle<void()> mainLoop) { CoreApplication::mainLoop = std::move(mainLoop); }
 
 private:
     static CoreApplication *app;
 
-    std::list<std::unique_ptr<EventListener>> listeners;
-    std::atomic<bool>                         running = false;
-    int                                       exitCode;
-    std::function<void()>                     mainLoop;
+    std::list<EventHandle>        listeners;
+    std::atomic<bool>             running = false;
+    int                           exitCode;
+    Core::function_handle<void()> mainLoop;
 };
 
 

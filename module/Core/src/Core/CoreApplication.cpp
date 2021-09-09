@@ -14,12 +14,11 @@ void CoreApplication::dispatchEvent(Event &event) noexcept
     BM_ASSERT(app, "application not found");
     app->dispatch(event);
 }
+
 void CoreApplication::dispatch(Event &event) noexcept
 {
-    for(auto &l : listeners) l->handle(event);
+    for(auto &l : listeners) l(event);
 }
-
-CoreApplication *CoreApplication::getApp() { return app; }
 
 int CoreApplication::exec()
 {
