@@ -4,19 +4,9 @@
 #include "Graphic/config.hpp"
 #include <string_view>
 #include <Graphic/BufferLayout.h>
+#include <glm/vec2.hpp>
+#include <Graphic/RenderCommand.hpp>
 
-#ifdef BM_PLATFORM_GLAD
-#    include <OpenGL/BufferObject.hpp>
-#    include <OpenGL/Shader.hpp>
-#    include <OpenGL/VertexArray.hpp>
-#    include <Core/PointerLikeStackVariable.hpp>
-#    include <OpenGL/RenderCommand.hpp>
-namespace Graphic
-{
-    using OpenGL::RenderCommand;
-    using OpenGL::Shader;
-}// namespace Graphic
-#endif
 
 namespace Graphic
 {
@@ -26,20 +16,16 @@ namespace Graphic
     class BM_GRAPHIC_DCL RenderSurface
     {
     public:
-#ifdef BM_PLATFORM_GLAD
-        using RenderCommandStorage = PointerLikeStackVariable<RenderCommand>;
-#endif
-
         RenderSurface(std::string_view title, unsigned width, unsigned height);
         ~RenderSurface() noexcept;
 
-        void show() noexcept;
-        void hide() noexcept;
-        void resize(unsigned width, unsigned height) noexcept;
-        void make_current() noexcept;
-        void swap() noexcept;
-
-        static constexpr RenderCommandStorage getRenderCommand() noexcept { return {}; }
+        void       setWindowName(std::string_view title);
+        void       show() noexcept;
+        void       hide() noexcept;
+        void       resize(unsigned width, unsigned height) noexcept;
+        void       make_current() noexcept;
+        void       swap() noexcept;
+        glm::uvec2 getSize() noexcept;
 
     private:
         static RenderSurfacePrivate *create(std::string_view title, unsigned width, unsigned height) noexcept;

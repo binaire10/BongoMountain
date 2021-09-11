@@ -3,7 +3,7 @@
 
 #include <string_view>
 #include <fstream>
-#include <Core/Ressource.hpp>
+#include <Core/ressource.hpp>
 #include <Core/memory.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -26,7 +26,8 @@ namespace OpenGL
         };
 
     public:
-        using ProgramResource = Resource<GLuint, ShaderTrait>;
+        using ProgramResource = Core::resource<GLuint, ShaderTrait>;
+        constexpr Shader() = default;
         explicit inline Shader(ProgramResource program)
             : program{ std::move(program) }
         {}
@@ -72,6 +73,11 @@ namespace OpenGL
         static inline void setUniformValue(int i, const glm::vec2 &vec) noexcept
         {
             glUniform2fv(i, 1, glm::value_ptr(vec));
+        }
+
+        static inline void setUniformArray(int i, const uint32_t *array, std::size_t count) noexcept
+        {
+            glUniform1uiv(i, count, array);
         }
 
         inline void                  bind() const noexcept { glUseProgram(program.getResource()); }

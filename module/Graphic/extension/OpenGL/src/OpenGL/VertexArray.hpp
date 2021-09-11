@@ -3,10 +3,11 @@
 
 #include "config.hpp"
 
-#include "Shader.hpp"
+#include <Graphic/BufferLayout.h>
 #include "BufferObject.hpp"
+#include <Graphic/BufferArray.hpp>
 
-class VertexArray
+namespace OpenGL
 {
     struct vao_trait
     {
@@ -21,7 +22,6 @@ class VertexArray
 
         static inline void destroy(const GLuint &id) noexcept { glDeleteVertexArrays(1, &id); }
     };
-
 
     static constexpr GLenum shaderDataTypeToOpenGLBaseType(ShaderDataType type)
     {
@@ -53,45 +53,69 @@ class VertexArray
         throw std::range_error{ "Unknown ShaderDataType!" };
     }
 
-public:
-    using VertexArrayHolder = Resource<GLuint, vao_trait>;
-
-    template<std::size_t n, typename T>
-    void create(const BufferLayout<n> &layout, IndexBufferStorageObject<T> ibo, VertexBufferObject vbo)
+    class BasicVertexArray
     {
-        indices  = std::move(ibo);
-        vertices = std::move(vbo);
-        count    = ibo.getCount();
+    public:
+        using VertexArrayHolder = Core::resource<GLuint, vao_trait>;
 
-        vao.create();
-
-        bind();
-        unsigned i{};
-        for(const BufferElement &e : layout)
+        template<std::size_t n>
+        static BasicVertexArray create(const BufferLayout<n> &layout)
         {
-            glEnableVertexAttribArray(i);
-            glVertexAttribPointer(i++,
-                                  shaderComponentCount(e.type),
-                                  shaderDataTypeToOpenGLBaseType(e.type),
-                                  e.normalized ? GL_TRUE : GL_FALSE,
-                                  layout.stride,
-                                  reinterpret_cast<void *>(e.offset));
+            BasicVertexArray bvao;
+            auto            &vao = bvao.vao;
+            vao.create();
+
+            bvao.bind();
+            unsigned i{};
+            for(const BufferElement &e : layout)
+            {
+                glEnableVertexAttribArray(i);
+                glVertexAttribPointer(i++,
+                                      shaderComponentCount(e.type),
+                                      shaderDataTypeToOpenGLBaseType(e.type),
+                                      e.normalized ? GL_TRUE : GL_FALSE,
+                                      layout.stride,
+                                      reinterpret_cast<void *>(e.offset));
+            }
+            return bvao;
         }
-    }
 
-    void bind() const noexcept { glBindVertexArray(vao.getResource()); }
+        void bind() const noexcept { glBindVertexArray(vao.getResource()); }
 
-    [[nodiscard]] const IndexBufferObject &getIndices() const noexcept { return indices; }
+        [[nodiscard]] const SharedIndexBuffer &getIndices() const noexcept { return indices; }
 
-    [[nodiscard]] const VertexBufferObject &getVertices() const noexcept { return vertices; }
+        [[nodiscard]] const SharedVertexBuffer &getVertices() const noexcept { return vertices; }
 
-    [[nodiscard]] unsigned getCount() const noexcept { return count; }
+        [[nodiscard]] unsigned getCount() const noexcept { return count; }
 
-private:
-    VertexArrayHolder  vao;
-    IndexBufferObject  indices;
-    VertexBufferObject vertices;
-    unsigned           count;
-};
+    protected:
+        VertexArrayHolder  vao;
+        std::size_t        count;
+        SharedIndexBuffer  indices;
+        SharedVertexBuffer vertices;
+    };
+
+    template<typename I>
+    class VertexArray : public BasicVertexArray
+    {
+    public:
+        VertexArray() = default;
+        VertexArray(BasicVertexArray &&vao) noexcept
+            : BasicVertexArray(std::move(vao))
+        {}
+
+        template<std::size_t n>
+        static VertexArray
+            create(const BufferLayout<n> &layout, Graphic::SharedIndexBufferArray<I> ibo, SharedVertexBuffer vbo)
+        {
+            VertexArray vao = BasicVertexArray::create(layout);
+
+            vao.count    = ibo.getCount();
+            vao.indices  = std::move(ibo);
+            vao.vertices = std::move(vbo);
+            return vao;
+        }
+    };
+}// namespace OpenGL
 
 #endif// GAMEENGINEBONGO_VERTEXARRAY_HPP

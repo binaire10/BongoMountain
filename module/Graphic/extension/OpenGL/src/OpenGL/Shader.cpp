@@ -13,7 +13,7 @@ namespace
 
         static inline void destroy(const GLuint &id) noexcept { glDeleteShader(id); }
     };
-    using ShaderResource = Resource<GLuint, ShaderTrait>;
+    using ShaderResource = Core::resource<GLuint, ShaderTrait>;
 
     void compile(GLuint id, const std::pair<std::size_t, std::string_view> &input)
     {
@@ -119,7 +119,7 @@ OpenGL::Shader OpenGL::Shader::createFromCode(std::string_view codes)
         glGetProgramiv(id, GL_INFO_LOG_LENGTH, &maxLength);
 
         // The maxLength includes the NULL character
-        BM_STACK_ARRAY(GLchar, infoLog, maxLength);
+        BM_STACK_ARRAY(GLchar, infoLog, maxLength + 1);
 
         glGetProgramInfoLog(id, maxLength, &maxLength, infoLog);
         infoLog[maxLength] = '\0';
@@ -135,18 +135,18 @@ OpenGL::Shader OpenGL::Shader::createFromCode(std::string_view codes)
 
 OpenGL::Shader OpenGL::Shader::createFromStream(std::ifstream &stream)
 {
-    stream.exceptions(std::ios_base::failbit);
-    stream.seekg(0, std::ios_base::end);
+    stream.exceptions(std::ios::failbit);
+    stream.seekg(0, std::ios::end);
     auto        count = stream.tellg();
     std::string buffer(count, '\0');
-    stream.seekg(0, std::ios_base::beg);
+    stream.seekg(0, std::ios::beg);
     stream.read(buffer.data(), count);
     return createFromCode(buffer);
 }
 
 OpenGL::Shader OpenGL::Shader::createFromStream(std::istream &stream)
 {
-    stream.exceptions(std::ios_base::failbit);
+    stream.exceptions(std::ios::failbit);
     std::string buffer(std::istreambuf_iterator<char>{ stream }, std::istreambuf_iterator<char>{});
     return createFromCode(buffer);
 }

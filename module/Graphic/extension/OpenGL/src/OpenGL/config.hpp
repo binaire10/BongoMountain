@@ -3,6 +3,7 @@
 
 #if defined(BM_PLATFORM_GLAD)
 #    include <windows.h>
+#    undef min
 #    include <glad/glad.h>
 #else
 #    include <GL/gl.h>

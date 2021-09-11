@@ -8,6 +8,8 @@ add_library(BongoGraphic SHARED)
 target_sources(BongoGraphic PRIVATE
         src/Graphic/config.hpp
         src/Graphic/Texture.cpp
+        src/Graphic/BufferVector.hpp
+        src/Graphic/detail/Traits.hpp
         src/Graphic/RenderType.hpp
         src/Graphic/RenderCommand.hpp
         src/Graphic/Context.hpp

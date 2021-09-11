@@ -115,15 +115,7 @@ Graphic::RenderSurface::RenderSurface(std::string_view title, unsigned int width
 #endif
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
 
-    if(*std::next(title.data(), title.size()) != '\0')
-    {
-        BM_STACK_ARRAY(char, titleFix, title.size() + 1);
-        std::copy(title.begin(), title.end(), titleFix);
-        titleFix[title.size()] = '\0';
-        data                   = create(std::string_view{ titleFix, title.size() }, width, height);
-    }
-    else
-        data = create(title, width, height);
+    data = fixe_string(title, [=](std::string_view str) { return create(str, width, height); });
 
     glfwDefaultWindowHints();
 
@@ -149,7 +141,14 @@ Graphic::RenderSurfacePrivate *
                                                                title.data(), nullptr, nullptr) };
 }
 
-void Graphic::RenderSurface::show() noexcept { glfwShowWindow(data->win); }
+void Graphic::RenderSurface::show() noexcept
+{
+    int width, height;
+    glfwGetWindowSize(data->win, &width, &height);
+    CoreApplication::dispatchEvent(
+        WindowResizeEvent{ this, static_cast<uint32_t>(width), static_cast<uint32_t>(height) });
+    glfwShowWindow(data->win);
+}
 
 void Graphic::RenderSurface::hide() noexcept { glfwHideWindow(data->win); }
 
@@ -161,3 +160,17 @@ void Graphic::RenderSurface::resize(unsigned width, unsigned height) noexcept
 void Graphic::RenderSurface::swap() noexcept { glfwSwapBuffers(data->win); }
 
 void Graphic::RenderSurface::make_current() noexcept { glfwMakeContextCurrent(data->win); }
+
+void Graphic::RenderSurface::setWindowName(std::string_view title)
+{
+    fixe_string(title, [this](std::string_view titleFix) { glfwSetWindowTitle(data->win, titleFix.data()); });
+}
+
+glm::uvec2 Graphic::RenderSurface::getSize() noexcept
+{
+    static_assert(std::is_same_v<std::make_signed_t<glm::uvec2::value_type>, int>);
+    static_assert(alignof(std::make_signed_t<glm::uvec2::value_type>) == alignof(int));
+    glm::uvec2 size;
+    glfwGetWindowSize(data->win, reinterpret_cast<int *>(&size.x), reinterpret_cast<int *>(&size.y));
+    return size;
+}

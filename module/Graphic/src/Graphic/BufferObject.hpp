@@ -7,17 +7,11 @@
 
 namespace Graphic
 {
-    using OpenGL::copy;
-
     using OpenGL::VertexBuffer;
-    using OpenGL::VertexBufferStorage;
     using OpenGL::IndexBuffer;
-    using OpenGL::IndexBufferStorage;
 
     using OpenGL::SharedVertexBuffer;
     using OpenGL::SharedIndexBuffer;
-    using OpenGL::SharedIndexBufferStorage;
-    using OpenGL::SharedVertexBufferStorage;
 }// namespace Graphic
 
 #else

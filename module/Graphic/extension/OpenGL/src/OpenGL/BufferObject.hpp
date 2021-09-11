@@ -1,13 +1,12 @@
-#ifndef GAMEENGINEBONGO_BUFFEROBJECT_HPP
-#define GAMEENGINEBONGO_BUFFEROBJECT_HPP
+#ifndef GAMEENGINEBONGO_OPENGL_BUFFEROBJECT_HPP
+#define GAMEENGINEBONGO_OPENGL_BUFFEROBJECT_HPP
 
-#include <Core/Ressource.hpp>
-#include <Graphic/BufferCounter.hpp>
+#include <Core/ressource.hpp>
+#include <Core/type_traits.hpp>
 
 #include "config.hpp"
 
-template<GLenum target>
-class BufferObject
+namespace OpenGL
 {
     struct BufferObjectTrait
     {
@@ -23,40 +22,66 @@ class BufferObject
         static inline void destroy(const GLuint &id) noexcept { glDeleteBuffers(1, &id); }
     };
 
-public:
-    void destroy() noexcept { buffer.destroy(); }
 
-    void bind() const noexcept { glBindBuffer(target, buffer.getResource()); }
-
-    void create(const void *data, std::size_t n) noexcept
+    template<template<typename, typename> typename ResourceOwnerT, GLenum target>
+    class BufferObjectGeneric
     {
-        buffer.create();
-        glBindBuffer(target, buffer.getResource());
-        glBufferData(target, n, data, GL_STATIC_DRAW);
+    public:
+        void destroy() noexcept { handle.destroy(); }
+
+        void bind() const noexcept { glBindBuffer(target, handle.getResource()); }
+
+        template<typename T = uint8_t>
+        static BufferObjectGeneric create(std::size_t len) {
+            BufferObjectGeneric buffer;
+
+            buffer.handle.create();
+            buffer.bind();
+            glBufferData(target, len * sizeof(T), nullptr, GL_DYNAMIC_DRAW);
+
+            return buffer;
+        }
+
+        template<typename T, std::size_t len>
+        static BufferObjectGeneric create(const T (&data)[len]) {
+            BufferObjectGeneric buffer;
+            buffer.handle.create();
+            buffer.bind();
+            glBufferData(target, len * sizeof(T), data, GL_STATIC_DRAW);
+            return buffer;
+        }
+
+        const ResourceOwnerT<GLuint, BufferObjectTrait> &getHandle() const { return handle; }
+
+    protected:
+        ResourceOwnerT<GLuint, BufferObjectTrait> handle;
+    };
+
+
+    template<GLenum target>
+    using BufferObject = BufferObjectGeneric<Core::resource, target>;
+
+    template<GLenum target>
+    using SharedBufferObject = BufferObjectGeneric<Core::shared_resource, target>;
+
+    using VertexBuffer = BufferObject<GL_ARRAY_BUFFER>;
+    using IndexBuffer  = BufferObject<GL_ELEMENT_ARRAY_BUFFER>;
+
+    using SharedVertexBuffer = SharedBufferObject<GL_ARRAY_BUFFER>;
+    using SharedIndexBuffer  = SharedBufferObject<GL_ELEMENT_ARRAY_BUFFER>;
+
+    template<template<typename,typename> typename AOwner, template<typename,typename> typename BOwner, GLenum target>
+    void memcpy(const BufferObjectGeneric<AOwner, target> &src, std::size_t soffset, BufferObjectGeneric<BOwner, target> &dest, std::size_t doffset, std::size_t size) {
+        static_assert(Core::is_same_template_v<AOwner, Core::resource> or Core::is_same_template_v<AOwner, Core::shared_resource>, "invalid resource manager of source");
+        static_assert(Core::is_same_template_v<BOwner, Core::resource> or Core::is_same_template_v<BOwner, Core::shared_resource>, "invalid resource manager of destination");
+        glCopyBufferSubData(src.getHandle().getResource(), dest.getHandle().getResource(),  soffset, doffset, size);
     }
 
-    void create(std::size_t n) noexcept
-    {
-        buffer.create();
-        glBindBuffer(target, buffer.getResource());
-        glBufferData(target, n, nullptr, GL_DYNAMIC_DRAW);
+    template<template<typename,typename> typename Owner, GLenum target>
+    void write(BufferObjectGeneric<Owner, target> &dest, std::size_t doffset, const void *data, std::size_t size) {
+        dest.bind();
+        glBufferSubData(target, doffset, size, data);
     }
+}// namespace OpenGL
 
-    void write(std::size_t offset, void *data, std::size_t size) noexcept
-    {
-        glBufferSubData(target, offset, size, data);
-    }
-
-protected:
-    Resource<GLuint, BufferObjectTrait> buffer;
-};
-
-using VertexBufferObject = BufferObject<GL_ARRAY_BUFFER>;
-using IndexBufferObject  = BufferObject<GL_ELEMENT_ARRAY_BUFFER>;
-
-template<typename T>
-using VertexBufferStorageObject = BufferCounter<T, BufferObject<GL_ARRAY_BUFFER>>;
-template<typename T>
-using IndexBufferStorageObject = BufferCounter<T, BufferObject<GL_ELEMENT_ARRAY_BUFFER>>;
-
-#endif// GAMEENGINEBONGO_BUFFEROBJECT_HPP
+#endif// GAMEENGINEBONGO_OPENGL_BUFFEROBJECT_HPP
