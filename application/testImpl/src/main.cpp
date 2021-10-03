@@ -5,6 +5,7 @@
 #include <Graphic/BufferLayout.h>
 #include <Graphic/GraphicApplication.hpp>
 #include <Graphic/Module.hpp>
+#include <Render/Render2D.hpp>
 #include <thread>
 
 using namespace std::chrono_literals;
@@ -22,10 +23,10 @@ using namespace std::string_view_literals;
  * ctx->end()
  */
 
-class Listen : public EventListener
+class Listen
 {
 public:
-    void handle(Event &e) override
+    void operator()(Event &e)
     {
         BM_DEBUG("{0}", e.getName());
         EventDispatcher d{ e };
@@ -35,7 +36,7 @@ public:
 
 int main(int argc, const char **argv)
 {
-    constexpr std::string_view code =
+    static constexpr std::string_view code =
         "#type vertex\n"
         "#version 330 core\n"
         "\n"
@@ -63,23 +64,24 @@ int main(int argc, const char **argv)
         "\tcolor = v_Color;\n"
         "}";
 
-    constexpr BufferLayout layout = make_layout(BufferElement{ ShaderDataType::Float3, "a_Position" },
-                                                BufferElement{ ShaderDataType::Float4, "a_Color" });
-    Log                    log;
-    GraphicApplication     app;
-    app.addListener(std::make_unique<Listen>());
+    static constexpr BufferLayout layout = make_layout(BufferElement{ ShaderDataType::Float3, "a_Position" },
+                                                       BufferElement{ ShaderDataType::Float4, "a_Color" });
+    Log                           log;
+    GraphicApplication            app;
+    app.addListener(Listen{});
 
     auto       module = Graphic::createModule();
     load_guard guard(*module);
 
     auto window = Graphic::getMainSurface(module);
+    window->setWindowName("triangle");
     window->show();
     window->make_current();
 
-    float vertices[3 * 7]{ -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f, 0.5f, -0.5f, 0.0f, 0.2f,
-                           0.3f,  0.8f,  1.0f, 0.0f, 0.5f, 0.0f, 0.8f, 0.8f, 0.2f,  1.0f };
+    static constexpr float vertices[3 * 7]{ -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f, 0.5f, -0.5f, 0.0f, 0.2f,
+                                            0.3f,  0.8f,  1.0f, 0.0f, 0.5f, 0.0f, 0.8f, 0.8f, 0.2f,  1.0f };
 
-    unsigned indices[]{ 0, 1, 2 };
+    static constexpr unsigned indices[]{ 0, 1, 2 };
 
     auto renderCommand = window->getRenderCommand();
     auto shader        = renderCommand->createShader(code);
@@ -96,6 +98,7 @@ int main(int argc, const char **argv)
 
 
     renderCommand->setClearColor(0.15, 0.15, 0.15, 1);
+    Render2D render{renderCommand, 20000*4, 20000};
 
     app.setMainLoop([&] {
         app.processEvent();
