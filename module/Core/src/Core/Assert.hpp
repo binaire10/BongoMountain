@@ -17,7 +17,7 @@
         {                                                         \
             if(!(x))                                              \
             {                                                     \
-                C("Assertion Failed (" #x "): {0}", __VA_ARGS__); \
+                C("Assertion Failed (" #x "): " __VA_ARGS__); \
                 BM_DEBUGBREAK();                                  \
                 std::exit(1);                                     \
             }                                                     \
