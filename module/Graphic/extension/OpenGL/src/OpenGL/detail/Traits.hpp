@@ -24,6 +24,12 @@ namespace OpenGL::detail
             OpenGL::write(container, offset * sizeof(T), data, count * sizeof(T));
         }
 
+        static T *data(container_type &container) { return container->getData(); }
+
+        static const T *data(const container_type &container) { return container->getData(); }
+
+        static const T *const_data(const container_type &container) { return container->getData(); }
+
         static ContainerT create(std::size_t len) { return ContainerT::create(len * sizeof(T)); }
 
         template<std::size_t len>
