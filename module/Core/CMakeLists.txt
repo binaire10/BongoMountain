@@ -5,8 +5,8 @@ target_sources(BongoCore PRIVATE
         src/Event/Event.h
         src/Event/EventDispatcher.h
         src/Core/load_guard.hpp
+        src/Core/functional.hpp
         src/Core/CoreApplication.hpp
-        src/Core/EventListener.hpp
         src/Core/CoreApplication.cpp
         src/Core/PointerLikeStackVariable.hpp
         src/Core/ModularModule.hpp

@@ -34,10 +34,7 @@ namespace Core
         {
             if(this == &move)
                 return *this;
-            if constexpr(std::is_trivially_move_assignable_v<T>)
-                data = move.data;
-            else
-                data = std::move(move.data);
+            data = std::move(move.data);
             move.data = TraitT::invalid_resource();
             return *this;
         }
@@ -107,6 +104,7 @@ namespace Core
             , data{ std::move(move.data) }
         {
             move.data = TraitT::invalid_resource();
+            move.counter = nullptr;
         }
 
         shared_resource &operator=(shared_resource &&move) noexcept
@@ -153,8 +151,9 @@ namespace Core
             {
                 delete counter;
                 TraitT::destroy(data);
-                data = TraitT::invalid_resource();
             }
+            data = TraitT::invalid_resource();
+            counter = nullptr;
         }
 
         constexpr const T &getResource() const noexcept { return data; }
