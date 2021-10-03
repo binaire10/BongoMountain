@@ -23,7 +23,7 @@ set_target_properties(common_options
 
 add_subdirectory(module)
 add_subdirectory(application)
-add_subdirectory(benchmark)
+add_subdirectory(test)
 
 configure_binary_output(BongoCore)
 configure_binary_output(BongoGraphic)

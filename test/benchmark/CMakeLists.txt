@@ -1,0 +1,7 @@
+add_executable(eventHandlerBenchmark eventHandler.cpp Extern.cpp Extern.hpp)
+target_link_libraries(eventHandlerBenchmark PRIVATE benchmark::benchmark BongoGraphic common_options)
+configure_binary_output(eventHandlerBenchmark)
+
+add_executable(variantVsAbstract variantVsAbstract.cpp)
+target_link_libraries(variantVsAbstract PRIVATE benchmark::benchmark)
+target_compile_features(variantVsAbstract PRIVATE cxx_std_20)
