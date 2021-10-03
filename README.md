@@ -4,13 +4,13 @@ C++ game engine
 
 ## Table of contents
  * [Introduction](#introduction)
- * [Dependencies](#depoendencies)
+ * [Dependencies](#dependencies)
  * [Feature](#feature)
  * [Plan Feature](#plan-feature)
 
 ## Introduction
 
-Watch branch [dev](BongoMountain/tree/dev) to see the current state of the engine
+Watch branch [dev](//github.com/binaire10/BongoMountain/tree/dev) to see the current state of the engine
 
 ## Dependencies
 
