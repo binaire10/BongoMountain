@@ -16,6 +16,7 @@ namespace Graphic
             using container_type = typename TraitT::container_type;
 
             [[nodiscard]] const container_type &getContainer() const { return container; }
+            [[nodiscard]] container_type       &getContainer() { return container; }
             [[nodiscard]] std::size_t           getCount() const { return count; }
             [[nodiscard]] std::size_t           getCapacity() const { return capacity; }
 
