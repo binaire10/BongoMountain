@@ -1,4 +1,4 @@
-# Bongo Montain Engine
+# Bongo Mountain Engine
 
 C++ game engine
 
