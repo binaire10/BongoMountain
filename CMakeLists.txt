@@ -22,11 +22,12 @@ set_target_properties(common_options
         )
 
 add_subdirectory(module)
-add_subdirectory(application)
+add_subdirectory(example)
 add_subdirectory(test)
 
 configure_binary_output(BongoCore)
 configure_binary_output(BongoGraphic)
+configure_binary_output(BongoRender)
 configure_binary_output(glfw)
 configure_binary_output(glad_r)
 configure_binary_output(glad_d)
