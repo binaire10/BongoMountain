@@ -54,7 +54,7 @@ namespace OpenGL
             id.create();
             glBindTexture(GL_TEXTURE_2D, id.getResource());
 
-            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat,
+            glTexImage2D(GL_TEXTURE_2D, 0, dataFormat, width, height, 0, dataFormat,
                          GL_UNSIGNED_BYTE, data);
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -69,6 +69,12 @@ namespace OpenGL
             glActiveTexture(GL_TEXTURE0 + unit);
             glBindTexture(GL_TEXTURE_2D, texture.getResource());
         }
+
+        inline void bind() const noexcept
+        {
+            glBindTexture(GL_TEXTURE_2D, texture.getResource());
+        }
+
         const Core::resource<GLuint, texture_trait> &getTexture() const { return texture; }
 
     private:

@@ -75,6 +75,11 @@ namespace OpenGL
             glUniform2fv(i, 1, glm::value_ptr(vec));
         }
 
+        static inline void setUniformValue(int i, int value) noexcept
+        {
+            glUniform1i(i, value);
+        }
+
         static inline void setUniformArray(int i, const uint32_t *array, std::size_t count) noexcept
         {
             glUniform1uiv(i, count, array);

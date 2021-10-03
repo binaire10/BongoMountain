@@ -52,7 +52,7 @@ Graphic::Texture Graphic::Texture::load_texture(std::istream &stream)
     if(data == nullptr)
         throw std::runtime_error{ "stbi failed to load image!" };
 
-    if(fmt != TextureFormat::UNSPECIFIED)
+    if(fmt == TextureFormat::UNSPECIFIED)
         throw std::runtime_error{ "unsupported loaded image" };
 
     auto texture = load_texture(data, width, height, fmt);
