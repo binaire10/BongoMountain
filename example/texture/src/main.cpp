@@ -70,7 +70,6 @@ int main(int argc, const char **argv)
         "void main()\n"
         "{\n"
         "\tcolor = texture(u_Texture, v_TexCoord);\n"
-        "color = vec4(color.r, 1.0, 1.0, 1.0);"
         "}\n";
 
     static constexpr BufferLayout layout = make_layout(BufferElement{ ShaderDataType::Float3, "a_Position" },
