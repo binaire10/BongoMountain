@@ -36,7 +36,12 @@ namespace
         BM_CORE_ASSERT(false, "Unknown severity level!");
     }
 
-    void gladCallback(const char *name, void *funcptr [[maybe_unused]], int len_args [[maybe_unused]], ...)
+    void gladCallbackPre(const char *name, void *funcptr [[maybe_unused]], int len_args [[maybe_unused]], ...)
+    {
+        BM_CORE_ASSERT(funcptr, "Fail to import function at glad init or didn't call it.");
+    }
+
+    void gladCallbackPost(const char *name, void *funcptr [[maybe_unused]], int len_args [[maybe_unused]], ...)
     {
         using namespace std::string_view_literals;
         auto glerrno = glad_glGetError();
@@ -73,13 +78,16 @@ void OpenGL::Module::load(Graphic::GlobalContext &)
 {
 #ifdef BM_PLATFORM_GLAD
     BM_CORE_INFO("Initialize GLAD");
-#    ifdef GLAD_DEBUG
-    BM_CORE_INFO("Set glad debug callback");
-    glad_set_post_callback(gladCallback);
-#    endif
 #    if defined(BM_PLATFORM_GLFW)
     int status [[maybe_unused]] = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
     BM_CORE_ASSERT(status, "Failed to initialize Glad with glfw")
+#    else
+#        error "GLad loader not found"
+#    endif
+#    ifdef GLAD_DEBUG
+    BM_CORE_INFO("Set glad debug callback");
+    glad_set_pre_callback(gladCallbackPre);
+    glad_set_post_callback(gladCallbackPost);
 #    endif
 #endif
 #ifndef NDEBUG
