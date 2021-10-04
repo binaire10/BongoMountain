@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
 project(GameEngineBongo)
 
+if(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
+    message(FATAL "binary dir and source dir cannot be the same")
+endif()
+
 include(cmake/AutoImport.cmake)
 
 function(configure_binary_output target)
