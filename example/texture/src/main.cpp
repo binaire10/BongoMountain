@@ -100,7 +100,7 @@ int main(int argc, const char **argv)
 
     auto view      = shader.getUniformLocation("u_ViewProjection");
     auto transform = shader.getUniformLocation("u_Transform");
-//    auto textUnit = shader.getUniformLocation("u_Texture");
+    // auto textUnit = shader.getUniformLocation("u_Texture");
 
     shader.bind();
     {
@@ -108,7 +108,7 @@ int main(int argc, const char **argv)
 
         shader.setUniformValue(view, glm::ortho(-ratio, ratio, -1.f, 1.f));
         shader.setUniformValue(transform, glm::mat4{ 1.f });
-//        shader.setUniformValue(textUnit, 0);
+        // shader.setUniformValue(textUnit, 0);
     }
     app.addListener([&](Event &e) {
         EventDispatcher dispatcher{ e };

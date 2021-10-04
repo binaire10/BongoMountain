@@ -75,8 +75,8 @@ int main(int argc, const char **argv)
     static constexpr ColoredVertex vertices[]{ ColoredVertex{ { -0.5f, -0.5f, 0.0f }, { 0.8f, 0.2f, 0.8f, 1.0f } },
                                                ColoredVertex{ { 0.5f, -0.5f, 0.0f }, { 0.2f, 0.3f, 0.8f, 1.0f } },
                                                ColoredVertex{ { 0.0f, 0.5f, 0.0f }, { 0.8f, 0.8f, 0.2f, 1.0f } } };
-    //    static constexpr float vertices[3 * 7]{ -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f, 0.5f, -0.5f, 0.0f, 0.2f,
-    //                                            0.3f,  0.8f,  1.0f, 0.0f, 0.5f, 0.0f, 0.8f, 0.8f, 0.2f,  1.0f };
+    // static constexpr float vertices[3 * 7]{ -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f, 0.5f, -0.5f, 0.0f, 0.2f,
+    //                                          0.3f,  0.8f, 1.0f, 0.0f, 0.5f, 0.0f, 0.8f, 0.8f, 0.2f,  1.0f };
 
     static constexpr uint8_t indices[]{ 0, 1, 2 };
 
@@ -86,9 +86,10 @@ int main(int argc, const char **argv)
     test.insert_back(vertices, 3);
     {
         const auto &container = test.getContainer();
-        auto array = container.getData<const ColoredVertex>();
-        for(unsigned i{} ; i < test.getCount() ; ++i) {
-            const auto &pos= array[i].pos;
+        auto        array     = container.getData<const ColoredVertex>();
+        for(unsigned i{}; i < test.getCount(); ++i)
+        {
+            const auto &pos = array[i].pos;
             BM_TRACE("Point({}, {}, {})", pos.x, pos.y, pos.z);
         }
     }
