@@ -49,12 +49,10 @@ namespace OpenGL
 
             BM_CORE_ASSERT(internalFormat && dataFormat, "Format not supported!");
 
-            OpenGL::Texture texture;
-            auto &id = texture.texture;
-            id.create();
-            glBindTexture(GL_TEXTURE_2D, id.getResource());
+            texture.create();
+            glBindTexture(GL_TEXTURE_2D, texture.getResource());
 
-            glTexImage2D(GL_TEXTURE_2D, 0, dataFormat, width, height, 0, dataFormat,
+            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat,
                          GL_UNSIGNED_BYTE, data);
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
