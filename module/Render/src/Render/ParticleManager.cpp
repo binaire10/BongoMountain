@@ -258,3 +258,10 @@ LightUid Render::ParticleManager::addParticle(glm::vec3         position,
     std::push_heap(m_particles.begin(), m_particles.end(), compare_particle);
     return newParticle.particleId;
 }
+
+void Render::ParticleManager::remove(LightUid uid) {
+    m_particles.erase(std::find_if(m_particles.begin(),  m_particles.end(), [uid](const Particle &p) -> bool {
+        return p.particleId == uid;
+    }));
+    std::make_heap(m_particles.begin(),  m_particles.end(), compare_particle);
+}

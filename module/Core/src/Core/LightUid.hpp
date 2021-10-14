@@ -14,6 +14,10 @@ public:
 
     inline uint32_t getId() const noexcept { return id; }
 
+    inline bool operator==(const LightUid &rhs) const noexcept { return id == rhs.id; }
+
+    inline bool operator!=(const LightUid &rhs) const noexcept { return !(rhs == *this); }
+
 private:
     uint32_t id;
 };
