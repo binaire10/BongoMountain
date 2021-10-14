@@ -11,8 +11,11 @@ class BufferArray : public TraitT::container_type
 public:
     using base_type = typename TraitT::container_type;
 
+    BufferArray() = default;
     BufferArray(BufferArray &&) noexcept = default;
-    BufferArray(const BufferArray &) noexcept = default;
+    BufferArray(const BufferArray &) = default;
+    BufferArray &operator=(BufferArray &&) noexcept = default;
+    BufferArray &operator=(const BufferArray &) = default;
 
     template<std::size_t n>
     void set(std::size_t offset, const T (&data)[n])
