@@ -39,7 +39,7 @@ namespace
     float ratio(glm::uvec2 value) { return (float)value.x / (float)value.y; }
 }// namespace
 
-int main(int argc, const char **argv)
+int main([[maybe_unused]] int argc, [[maybe_unused]] const char **argv)
 {
     Log                log;
     GraphicApplication app;
@@ -59,16 +59,17 @@ int main(int argc, const char **argv)
     const auto start = std::chrono::steady_clock::now();
 
     manager.configure(glm::mat4{}, 0);
-    std::mt19937_64 rand(std::random_device{}());
-    std::uniform_real_distribution<float> distribution{0, 120};
-    std::uniform_int_distribution<int> distribution1{0, 1};
+    std::mt19937_64                       rand(std::random_device{}());
+    std::uniform_real_distribution<float> distribution{ 0, 120 };
+    std::uniform_int_distribution<int>    distribution1{ 0, 1 };
 
     for(unsigned i{}; i < 200; ++i)
         for(unsigned j{}; j < 200; ++j)
-            manager.addParticle({ (float(i) / 200.f - 0.5f) * 2, (float(j) / 200.f - 0.5f) * 2, 0 }, { (1.f / 200.f) * 2, (1.f / 200.f) * 2 },
-                                { 0, 0, 0 }, glm::angleAxis(0.f, glm::vec3{ 0, 0, 1 }),
-                                glm::angleAxis(glm::degrees(5.f * (distribution1(rand) * 2 - 1)), glm::vec3{ 0, 0, 1 }),
-                                distribution(rand), glm::vec4{ 1, 0, 0, 1 });
+            manager.addParticle(
+                { (float(i) / 200.f - 0.5f) * 2, (float(j) / 200.f - 0.5f) * 2, 0 },
+                { (1.f / 200.f) * 2, (1.f / 200.f) * 2 }, { 0, 0, 0 }, glm::angleAxis(0.f, glm::vec3{ 0, 0, 1 }),
+                glm::angleAxis(glm::degrees(5.f * float(distribution1(rand) * 2 - 1)), glm::vec3{ 0, 0, 1 }),
+                distribution(rand), glm::vec4{ 1, 0, 0, 1 });
 
 
     app.addListener([&](Event &e) {
