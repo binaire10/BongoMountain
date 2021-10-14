@@ -98,6 +98,7 @@ namespace Core
             data    = cpy.data;
             counter = cpy.counter;
             ++(*counter);
+            return *this;
         }
         constexpr shared_resource(shared_resource &&move) noexcept
             : counter{ move.counter }
