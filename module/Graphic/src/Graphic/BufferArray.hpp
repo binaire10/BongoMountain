@@ -12,6 +12,7 @@ public:
     using base_type = typename TraitT::container_type;
 
     BufferArray(BufferArray &&) noexcept = default;
+    BufferArray(const BufferArray &) noexcept = default;
 
     template<std::size_t n>
     void set(std::size_t offset, const T (&data)[n])
@@ -19,7 +20,7 @@ public:
         TraitT::write(*this, offset, data, n);
     }
 
-    void set(std::size_t offset, const T *data, std::size_t n) { TraitT::write(this, offset, data, n); }
+    void set(std::size_t offset, const T *data, std::size_t n) { TraitT::write(*this, offset, data, n); }
 
     const T *getData() const { return TraitT::const_data(*this); }
 

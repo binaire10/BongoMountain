@@ -80,6 +80,11 @@ namespace OpenGL
             glUniform1i(i, value);
         }
 
+        static inline void setUniformValue(int i, float value) noexcept
+        {
+            glUniform1f(i, value);
+        }
+
         static inline void setUniformArray(int i, const uint32_t *array, std::size_t count) noexcept
         {
             glUniform1uiv(i, count, array);
