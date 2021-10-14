@@ -166,6 +166,11 @@ void main()
                     BufferElement{ ShaderDataType::Float, "a_FinishTime" },
                     BufferElement{ ShaderDataType::Int, "a_ParticleId" });
 
+    static constexpr auto compare_particle = [](const Render::ParticleManager::Particle &a,
+                                                const Render::ParticleManager::Particle &b) {
+        return a.finishTime > b.finishTime;
+    };
+
     static_assert(sizeof(Render::ParticleManager::Particle) == layout_buffer.stride);
 }// namespace
 
@@ -192,8 +197,9 @@ void Render::ParticleManager::configure(glm::mat4 projection, float currentTime)
     m_shader.bind();
     m_shader.setUniformValue(u_Timestamp, currentTime);
     m_shader.setUniformValue(u_ViewProjection, projection);
-    while(m_particles.size() > 0 && m_particles.back().finishTime < m_currentTime)
+    while(m_particles.size() > 0 && m_particles.front().finishTime < m_currentTime)
     {
+        std::pop_heap(m_particles.begin(), m_particles.end(), compare_particle);
         m_particles.pop_back();
         m_isUpdate = true;
     }
@@ -210,13 +216,13 @@ void Render::ParticleManager::draw()
     Graphic::RenderCommand::drawPoints(m_shader, m_vao, m_particles.size());
 }
 LightUid Render::ParticleManager::addParticle(glm::vec3         position,
-                                      glm::vec2         size,
-                                      glm::vec3         speed,
-                                      glm::quat         rotation,
-                                      glm::quat         rotationSpeed,
-                                      float             ttl,
-                                      glm::vec4         color,
-                                      Graphic::Texture *texture)
+                                              glm::vec2         size,
+                                              glm::vec3         speed,
+                                              glm::quat         rotation,
+                                              glm::quat         rotationSpeed,
+                                              float             ttl,
+                                              glm::vec4         color,
+                                              Graphic::Texture *texture)
 {
     m_isUpdate       = true;
     float startTime  = m_currentTime;
@@ -243,13 +249,12 @@ LightUid Render::ParticleManager::addParticle(glm::vec3         position,
                           finishTime,
                           LightUid::generate() };
     if(m_particles.size() == m_particles.capacity())
+    {
+        std::pop_heap(m_particles.begin(), m_particles.end(), compare_particle);
         m_particles.pop_back();
+    }
 
-    m_particles.emplace(
-        std::lower_bound(m_particles.begin(),
-                         m_particles.end(),
-                         newParticle,
-                         [](const Particle &a, const Particle &b) { return a.finishTime > b.finishTime; }),
-        newParticle);
+    m_particles.emplace_back(newParticle);
+    std::push_heap(m_particles.begin(), m_particles.end(), compare_particle);
     return newParticle.particleId;
 }
