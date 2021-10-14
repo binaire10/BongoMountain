@@ -13,6 +13,7 @@
 
 namespace Graphic
 {
+    using OpenGL::BasicVertexArray;
     using OpenGL::VertexArray;
 }// namespace Graphic
 

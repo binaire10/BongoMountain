@@ -58,11 +58,19 @@ namespace OpenGL
     public:
         using VertexArrayHolder = Core::resource<GLuint, vao_trait>;
 
+        template<std::size_t n, typename T>
+        static BasicVertexArray create(const BufferLayout<n> &layout, Graphic::SharedVertexBufferArray<T> vbo)
+        {
+            return create(layout, vbo, vbo.getCount());
+        }
+
         template<std::size_t n>
-        static BasicVertexArray create(const BufferLayout<n> &layout)
+        static BasicVertexArray create(const BufferLayout<n> &layout, SharedVertexBuffer vbo, unsigned count)
         {
             BasicVertexArray bvao;
-            auto            &vao = bvao.vao;
+            bvao.count    = count;
+            bvao.vertices = vbo;
+            auto &vao     = bvao.vao;
             vao.create();
 
             bvao.bind();
@@ -82,8 +90,6 @@ namespace OpenGL
 
         void bind() const noexcept { glBindVertexArray(vao.getResource()); }
 
-        [[nodiscard]] const SharedIndexBuffer &getIndices() const noexcept { return indices; }
-
         [[nodiscard]] const SharedVertexBuffer &getVertices() const noexcept { return vertices; }
 
         [[nodiscard]] unsigned getCount() const noexcept { return count; }
@@ -91,7 +97,6 @@ namespace OpenGL
     protected:
         VertexArrayHolder  vao;
         std::size_t        count;
-        SharedIndexBuffer  indices;
         SharedVertexBuffer vertices;
     };
 
@@ -108,13 +113,15 @@ namespace OpenGL
         static VertexArray
             create(const BufferLayout<n> &layout, Graphic::SharedIndexBufferArray<I> ibo, SharedVertexBuffer vbo)
         {
-            VertexArray vao = BasicVertexArray::create(layout);
-
-            vao.count    = ibo.getCount();
-            vao.indices  = std::move(ibo);
-            vao.vertices = std::move(vbo);
+            VertexArray vao = BasicVertexArray::create(layout, std::move(vbo), ibo.getCount());
+            vao.indices = std::move(ibo);
             return vao;
         }
+
+        [[nodiscard]] const SharedIndexBuffer &getIndices() const noexcept { return indices; }
+
+    private:
+        SharedIndexBuffer indices;
     };
 }// namespace OpenGL
 

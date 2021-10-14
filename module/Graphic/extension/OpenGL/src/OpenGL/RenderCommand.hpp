@@ -9,6 +9,8 @@
 #include "VertexArray.hpp"
 #include "Texture.hpp"
 
+#include <Graphic/BufferArray.hpp>
+
 namespace OpenGL
 {
     class RenderCommand
@@ -16,8 +18,8 @@ namespace OpenGL
     public:
         inline static void setViewport(unsigned x, unsigned y, unsigned width, unsigned height) noexcept
         {
-            glViewport(
-                static_cast<GLint>(x), static_cast<GLint>(y), static_cast<GLint>(width), static_cast<GLint>(height));
+            glViewport(static_cast<GLint>(x), static_cast<GLint>(y), static_cast<GLint>(width),
+                       static_cast<GLint>(height));
         }
 
         inline static void
@@ -26,7 +28,8 @@ namespace OpenGL
             shader.bind();
             vertexArray.bind();
             vertexArray.getVertices().bind();
-            glDrawArrays(GL_TRIANGLES, 0, count ? static_cast<GLsizei>(count) : static_cast<GLsizei>(vertexArray.getCount()));
+            glDrawArrays(GL_TRIANGLES, 0,
+                         count ? static_cast<GLsizei>(count) : static_cast<GLsizei>(vertexArray.getCount()));
         }
 
         inline static void
@@ -36,8 +39,8 @@ namespace OpenGL
             vertexArray.bind();
             vertexArray.getIndices().bind();
             vertexArray.getVertices().bind();
-            glDrawElements(
-                GL_TRIANGLES, count ? count : static_cast<GLsizei>(vertexArray.getCount()), GL_UNSIGNED_BYTE, nullptr);
+            glDrawElements(GL_TRIANGLES, count ? count : static_cast<GLsizei>(vertexArray.getCount()), GL_UNSIGNED_BYTE,
+                           nullptr);
         }
 
         inline static void
@@ -47,8 +50,8 @@ namespace OpenGL
             vertexArray.bind();
             vertexArray.getIndices().bind();
             vertexArray.getVertices().bind();
-            glDrawElements(
-                GL_TRIANGLES, count ? count : static_cast<GLsizei>(vertexArray.getCount()), GL_UNSIGNED_SHORT, nullptr);
+            glDrawElements(GL_TRIANGLES, count ? count : static_cast<GLsizei>(vertexArray.getCount()),
+                           GL_UNSIGNED_SHORT, nullptr);
         }
 
         inline static void
@@ -58,15 +61,45 @@ namespace OpenGL
             vertexArray.bind();
             vertexArray.getIndices().bind();
             vertexArray.getVertices().bind();
-            glDrawElements(
-                GL_TRIANGLES, count ? count : static_cast<GLsizei>(vertexArray.getCount()), GL_UNSIGNED_INT, nullptr);
+            glDrawElements(GL_TRIANGLES, count ? count : static_cast<GLsizei>(vertexArray.getCount()), GL_UNSIGNED_INT,
+                           nullptr);
         }
 
-        inline static void draw(const Shader &shader, const VertexBuffer &vertex, unsigned count) noexcept
+        inline static void drawTriangles(const Shader &shader, const VertexBuffer &vertex, unsigned count) noexcept
         {
             shader.bind();
             vertex.bind();
             glDrawArrays(GL_TRIANGLES, 0, count);
+        }
+
+        inline static void drawPoints(const Shader &shader, const BasicVertexArray &vertex, unsigned count = 0) noexcept
+        {
+            shader.bind();
+            vertex.bind();
+            vertex.getVertices().bind();
+            glDrawArrays(GL_POINTS, 0, count ? count : vertex.getCount());
+        }
+
+        template<typename T>
+        inline static void drawPoints(const Shader                              &shader,
+                                      const Graphic::SharedVertexBufferArray<T> &vertex,
+                                      unsigned                                   count = 0) noexcept
+        {
+            drawPoints(shader, static_cast<SharedVertexBuffer &>(vertex), count ? count : vertex.getCount());
+        }
+
+        inline static void drawPoints(const Shader &shader, const SharedVertexBuffer &vertex, unsigned count) noexcept
+        {
+            shader.bind();
+            vertex.bind();
+            glDrawArrays(GL_POINTS, 0, count);
+        }
+
+        inline static void drawPoints(const Shader &shader, const VertexBuffer &vertex, unsigned count) noexcept
+        {
+            shader.bind();
+            vertex.bind();
+            glDrawArrays(GL_POINTS, 0, count);
         }
 
         inline static void setClearColor(float r, float g, float b, float a) noexcept { glClearColor(r, g, b, a); }
