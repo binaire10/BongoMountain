@@ -176,7 +176,7 @@ void main()
 
 void Render::ParticleManager::initialize(unsigned int particleMax)
 {
-    static constexpr uint32_t white = static_cast<uint32_t>(0xFF'FF'FF'FF);
+    static constexpr uint32_t white = 0xFF'FF'FF'FFu;
     m_white                         = Graphic::Texture::load_texture(&white, 1, 1, Graphic::TextureFormat::RGBA_8bit);
 
     m_buffers = Graphic::SharedVertexBufferArray<Particle>::create(particleMax);
