@@ -78,7 +78,7 @@ int main(int argc, const char **argv)
     // static constexpr float vertices[3 * 7]{ -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f, 0.5f, -0.5f, 0.0f, 0.2f,
     //                                          0.3f,  0.8f, 1.0f, 0.0f, 0.5f, 0.0f, 0.8f, 0.8f, 0.2f,  1.0f };
 
-    static constexpr uint8_t indices[]{ 0, 1, 2 };
+    static constexpr uint16_t indices[]{ 0, 1, 2 };
 
     auto shader = Graphic::Shader::createFromCode(code);
 
@@ -95,7 +95,7 @@ int main(int argc, const char **argv)
     }
 
     auto vao = Graphic::VertexArray<std::decay_t<decltype(*indices)>>::create(
-        layout, Graphic::SharedIndexBufferArray<uint8_t>::create(indices), test.getContainer());
+        layout, Graphic::SharedIndexBufferArray<uint16_t>::create(indices), test.getContainer());
     constexpr ColoredVertex change{ { 0.0f, 0.9f, 0.0f }, { 0.8f, 0.8f, 0.2f, 1.0f } };
     test.set(2, change);
 

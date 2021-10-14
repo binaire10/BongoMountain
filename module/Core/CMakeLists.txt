@@ -17,7 +17,9 @@ target_sources(BongoCore PRIVATE
         src/Core/ressource.hpp
         src/Core/type_traits.hpp
         src/Core/memory.hpp
-        src/Core/config.hpp)
+        src/Core/config.hpp
+        src/Core/LightUid.hpp
+        src/Core/LightUid.cpp)
 target_include_directories(BongoCore PUBLIC src)
 target_link_libraries(BongoCore PUBLIC common_options)
 target_link_libraries(BongoCore PUBLIC spdlog::spdlog)
