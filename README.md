@@ -19,4 +19,19 @@ at configuration time with git.
 
 ## Feature
 
+ - OpenGL primitive object
+   - Vertex and Index Buffer
+   - Texture 2D
+   - Shader
+   - Allow memory dump for OpenGL buffer
+   - Vertex Layout
+   - Dynamic allocation of memory for `BufferVectorObjectGeneric`
+ - Dynamic Extension loader
+ - Core and App Logger
+ - resource handler (shared, not shared)
+ - Current extension available :
+    - glfw loader with glad initializing
+    - utility extension with image loader
+ - Default debug helper in debug binary version
+
 ## Plan Feature
