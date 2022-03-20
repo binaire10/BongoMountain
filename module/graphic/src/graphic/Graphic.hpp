@@ -8,7 +8,8 @@
 
 namespace graphic
 {
-    BM_GRAPHIC_DCL std::unique_ptr<render::RenderDevice> createRenderDevice(core::Platform &platform, const render::RenderDeviceInfo &info);
+    BM_GRAPHIC_DCL std::unique_ptr<render::RenderDevice> createRenderDevice(core::Platform                 &platform,
+                                                                            const render::RenderDeviceInfo &info);
 }
 
 #endif// BONGOMOUNTAIN_GRAPHIC_HPP

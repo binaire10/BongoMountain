@@ -20,5 +20,5 @@ graphic::Image graphic::Image::createFromStream(core::Platform &platform, std::i
     platform.dispatchEvent(query);
     if(auto &image = query.getImage())
         return std::move(*query.getImage());
-    throw std::runtime_error{"no image in the query generate."};
+    throw std::runtime_error{ "no image in the query generate." };
 }

@@ -8,7 +8,8 @@ namespace graphic
 {
     enum class TextureFormat { RGB_8bit, RGB_16bit, RGB_32bit, RGBA_8bit, RGBA_16bit, RGBA_32bit, UNSPECIFIED };
 
-    constexpr std::size_t sizeofPixel(TextureFormat format) {
+    constexpr std::size_t sizeofPixel(TextureFormat format)
+    {
         switch(format)
         {
         case TextureFormat::RGB_8bit:
@@ -24,8 +25,8 @@ namespace graphic
         case TextureFormat::RGBA_32bit:
             return 4 * sizeof(uint32_t);
         }
-        throw std::runtime_error{"undefined size for format"};
+        throw std::runtime_error{ "undefined size for format" };
     }
-}
+}// namespace graphic
 
 #endif// BONGOMOUNTAIN_TEXTUREFORMAT_HPP

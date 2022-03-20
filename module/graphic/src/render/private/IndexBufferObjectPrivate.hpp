@@ -10,7 +10,7 @@ namespace render::detail
     public:
         virtual ~IndexBufferObjectPrivate() = default;
 
-        virtual void create(std::size_t size) = 0;
+        virtual void create(std::size_t size)                   = 0;
         virtual void create(const void *data, std::size_t size) = 0;
         virtual void bind() const                               = 0;
         virtual void destroy()                                  = 0;
