@@ -32,8 +32,7 @@ namespace render
             return m_handler;
         }
 
-    protected:
-        friend class render::RenderDevice;
+    private:
         std::unique_ptr<detail::VertexLayoutPrivate> m_handler;
     };
 }// namespace render

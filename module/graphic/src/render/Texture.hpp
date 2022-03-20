@@ -28,8 +28,7 @@ namespace render
         void create(const graphic::ImageView &imageView);
         [[nodiscard]] constexpr const std::unique_ptr<detail::TexturePrivate> &getPrivate() const { return m_handler; }
 
-    protected:
-        friend class render::RenderDevice;
+    private:
         std::unique_ptr<detail::TexturePrivate> m_handler;
     };
 }// namespace render
