@@ -37,9 +37,9 @@ namespace render
 
         void bind() const;
 
-        int getAttributeLocation(std::string_view name) const noexcept;
+        [[nodiscard]] int getAttributeLocation(std::string_view name) const noexcept;
 
-        int getUniformLocation(std::string_view name) const noexcept;
+        [[nodiscard]] int getUniformLocation(std::string_view name) const noexcept;
 
         void setUniformValue(int i, const glm::mat4 &mat) noexcept;
 
