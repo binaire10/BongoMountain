@@ -4,7 +4,9 @@
 render::Shader::Shader(render::RenderDevice *owner, std::unique_ptr<detail::ShaderPrivate> &&handler)
     : RenderElement(owner)
     , m_handler(std::move(handler))
-{}
+{
+    BM_CORE_ASSERT(m_handler, "Shader handler is require");
+}
 
 render::Shader::~Shader() = default;
 

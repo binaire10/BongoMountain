@@ -5,7 +5,9 @@ render::IndexBufferObject::IndexBufferObject(render::RenderDevice               
                                              std::unique_ptr<detail::IndexBufferObjectPrivate> &&handle)
     : RenderElement(owner)
     , m_handler{ std::move(handle) }
-{}
+{
+    BM_CORE_ASSERT(m_handler, "IndexBufferObject handler is require");
+}
 
 render::IndexBufferObject::~IndexBufferObject() = default;
 
