@@ -8,7 +8,7 @@
 #include <nlohmann/json.hpp>
 
 #include "config.hpp"
-#include "Module.hpp"
+#include "Library.hpp"
 #include "Layer.hpp"
 #include "functional.hpp"
 #include "Assert.hpp"
@@ -30,7 +30,7 @@ namespace core
         ~ExtensionManager();
         void addLayer(std::shared_ptr<Layer> &&layer);
 
-        void load(const std::filesystem::path &path, const nlohmann::json &configs = {});
+        void load(const std::filesystem::path &path_dir, const nlohmann::json &configs = {});
 
         void attach();
 
@@ -45,7 +45,7 @@ namespace core
     private:
         bool                                m_isAttached = false;
         std::vector<std::shared_ptr<Layer>> m_layers;
-        std::vector<Module>                 m_modules;
+        std::vector<Library>                m_libraries;
     };
 
     class BM_CORE_DCL Platform : public ExtensionManager
@@ -62,7 +62,7 @@ namespace core
 
     private:
         std::filesystem::path m_executable;
-
+        nlohmann::json        m_config;
         static Platform *instance;
     };
 }// namespace core

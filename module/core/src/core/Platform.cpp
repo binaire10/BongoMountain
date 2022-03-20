@@ -1,39 +1,36 @@
 #include "Platform.hpp"
 #include <iostream>
-#include "Library.hpp"
 #include "Assert.hpp"
 #include <event/Event.hpp>
-#include "Module.hpp"
+
+using namespace std::string_view_literals;
+
+#ifndef EXTENSIONS_SUFFIX
+#    if defined(_WIN32)
+#        define EXTENSIONS_SUFFIX ".dll"sv
+#    elif defined(_linux)
+#        define EXTENSIONS_SUFFIX ".so"sv
+#    endif
+#endif
 
 core::ExtensionManager::~ExtensionManager() { unload(); }
 
-void core::ExtensionManager::load(const std::filesystem::path &path, const nlohmann::json &configs)
+void core::ExtensionManager::load(const std::filesystem::path &path_dir, const nlohmann::json &configs)
 {
-    BM_CORE_INFO("Load extensions in {}\nConfiguration : {}", path.string(), nlohmann::to_string(configs));
+    BM_CORE_INFO("Load extensions in {}\nConfiguration : {}", path_dir.string(), nlohmann::to_string(configs));
 
-    for(auto &file : std::filesystem::directory_iterator{ path })
+    for(const auto &file : std::filesystem::directory_iterator{ path_dir })
     {
-        auto file_path = file.path();
-        if(file_path.extension() == ".dll")
+        auto &path = file.path();
+        if(path.extension() == EXTENSIONS_SUFFIX)
         {
-            BM_CORE_INFO("Load extension {}", file_path.filename().string());
-            core::Library library{ file_path };
-            auto          loader =
-                library.load<core::Module(std::filesystem::path, core::Library &&, const nlohmann::json &)>("createModule");
+            BM_CORE_INFO("Load extension {}", path.filename().string());
+            auto &library = m_libraries.emplace_back(path.string());
+            auto  loader  = library.load<void(core::ExtensionManager &, const nlohmann::json &)>("initialize");
             if(!loader)
                 BM_CORE_ERROR("Invalid loader !");
             else
-                m_modules.push_back(loader(std::move(file_path), std::move(library), configs));
-        }
-    }
-
-    for(auto &module : m_modules) {
-        BM_CORE_DEBUG("Load module {}", module.getName());
-        auto serviceDescriptions = module.getServiceLoader()->getServiceDescription();
-        for(auto serviceDescription : serviceDescriptions) {
-            if(serviceDescription->getType() == typeid(Layer)) {
-                m_layers.emplace_back(serviceDescription->create<Layer>());
-            }
+                loader(*this, configs);
         }
     }
 
@@ -62,7 +59,7 @@ void core::ExtensionManager::unload()
         detach();
     BM_CORE_INFO("Unload extensions");
     m_layers.clear();
-    m_modules.clear();
+    m_libraries.clear();
 }
 
 void core::ExtensionManager::addLayer(std::shared_ptr<Layer> &&layer)

@@ -6,7 +6,7 @@
 #include <optional>
 
 
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32)
 #    include <windows.h>
 #    include "memory.hpp"
 #endif
@@ -15,7 +15,7 @@ namespace core
 {
     inline namespace v1_0
     {
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32)
         class Library
         {
         public:
