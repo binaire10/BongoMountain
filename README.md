@@ -14,8 +14,7 @@ Watch branch [dev](//github.com/binaire10/BongoMountain/tree/dev) to see the cur
 
 ## Dependencies
 
-Most dependencies is downloaded automaticaly by the cmake project
-at configuration time with git.
+Most dependencies is handle by conan.
 
 ## Feature
 
@@ -35,3 +34,7 @@ at configuration time with git.
  - Default debug helper in debug binary version
 
 ## Plan Feature
+ - Draw by chosen primitive type in static
+ - Draw manager in separate module
+   - particle system
+   - quad batchRender
