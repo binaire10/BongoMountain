@@ -92,7 +92,7 @@ int main(int argc, const char **argv)
         shader.setUniformValue(projectionLocation, glm::ortho(0, 1, 0, 1));
         shader.setUniformValue(timeLocation, 0.f);
 
-        device->draw(vbo, vao, 3);
+        device->drawTriangles(vbo, vao, std::size(array_data));
         {
             auto image = graphic::Image::createFromStream(
                 platform, std::ifstream{ "binaire_laboratories.jpg", std::ios::binary | std::ios::in });

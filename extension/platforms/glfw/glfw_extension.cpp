@@ -40,7 +40,7 @@ namespace
 
         static void clear() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); }
 
-        void draw(const render::VertexBufferObject &object, const render::VertexLayout &layout, unsigned count)
+        void drawTriangles(const render::VertexBufferObject &object, const render::VertexLayout &layout, unsigned count)
         {
             object.bind();
             layout.bind();
@@ -132,9 +132,9 @@ namespace
         void make_current() override { GLFWHandler::make_current(); }
         void flush() override { GLFWHandler::flush(); }
         void clear() override { GLFWHandler::clear(); }
-        void draw(const render::VertexBufferObject &vbo, const render::VertexLayout &vao, unsigned count) override
+        void drawTriangles(const render::VertexBufferObject &vbo, const render::VertexLayout &vao, unsigned count) override
         {
-            GLFWHandler::draw(vbo, vao, count);
+            GLFWHandler::drawTriangles(vbo, vao, count);
         }
 
         render::VertexBufferObject createVertexBuffer() override { return { this, GLFWHandler::createVertexBuffer() }; }
@@ -190,9 +190,9 @@ namespace
         void hide() override { GLFWHandler::hide(); }
         void flush() override { GLFWHandler::flush(); }
         void clear() override { GLFWHandler::clear(); }
-        void draw(const render::VertexBufferObject &vbo, const render::VertexLayout &vao, unsigned count) override
+        void drawTriangles(const render::VertexBufferObject &vbo, const render::VertexLayout &vao, unsigned count) override
         {
-            GLFWHandler::draw(vbo, vao, count);
+            GLFWHandler::drawTriangles(vbo, vao, count);
         }
 
         render::VertexBufferObject createVertexBuffer() override { return { this, GLFWHandler::createVertexBuffer() }; }
