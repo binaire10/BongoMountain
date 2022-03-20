@@ -14,19 +14,20 @@
 #        error unsupport platform
 #    endif
 
-#    define BM_CUSTOM_ASSERT(C, x, ...)                           \
-        {                                                         \
-            if(!(x))                                              \
-            {                                                     \
-                C ("Assertion Failed (" #x "): " __VA_ARGS__); \
-                BM_DEBUGBREAK();                                  \
-                throw std::runtime_error{fmt::format("Assertion Failed (" #x "): " __VA_ARGS__)};                                     \
-            }                                                     \
+#    define BM_CUSTOM_ASSERT(C, x, ...)                                                             \
+        {                                                                                           \
+            if(!(x))                                                                                \
+            {                                                                                       \
+                C("Assertion Failed (" #x "): " __VA_ARGS__);                                       \
+                BM_DEBUGBREAK();                                                                    \
+                throw std::runtime_error{ fmt::format("Assertion Failed (" #x "): " __VA_ARGS__) }; \
+            }                                                                                       \
         }
 
 #    define BM_ASSERT(x, ...)      BM_CUSTOM_ASSERT(BM_ERROR, x, __VA_ARGS__)
 #    define BM_CORE_ASSERT(x, ...) BM_CUSTOM_ASSERT(BM_CORE_ERROR, x, __VA_ARGS__)
 #else
+#    define BM_CUSTOM_ASSERT(C, x, ...)
 #    define BM_ASSERT(x, ...)
 #    define BM_CORE_ASSERT(x, ...)
 #endif
