@@ -29,13 +29,15 @@ namespace core
         ~ExtensionManager();
         void addLayer(std::shared_ptr<Layer> &&layer);
 
-        void load(const std::filesystem::path &path, const nlohmann::json &configs);
+        void load(const std::filesystem::path &path, const nlohmann::json &configs = {});
 
         void attach();
 
         void detach();
 
         void unload();
+
+        void dispatchEvent(Event &event);
 
         [[nodiscard]] const std::vector<std::shared_ptr<Layer>> &getLayers() const { return m_layers; }
 
@@ -50,15 +52,10 @@ namespace core
     public:
         Platform(int argc, const char **argv);
 
-        void dispatchEvent(Event &event);
-
-        [[nodiscard]] const nlohmann::json &getConfig() const { return m_config; }
-
-        nlohmann::json &getConfig() { return m_config; }
+        const std::filesystem::path &getApplicationPath() { return m_executable; }
 
     private:
         std::filesystem::path m_executable;
-        nlohmann::json        m_config;
     };
 }// namespace core
 

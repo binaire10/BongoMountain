@@ -17,6 +17,7 @@ enum class EventType {
     MouseButtonReleased,
     QueryRenderDevice,
     ReadImage,
+    QueryInterface,
 };
 
 enum class EventCategory {

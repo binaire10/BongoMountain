@@ -23,6 +23,15 @@ namespace core {
 
     template<bool condition, template<typename...> typename T>
     using enable_template_if_t = typename enable_template_if<condition, T>::type;
+
+    template<typename SignatureT>
+    constexpr SignatureT *get_overload(SignatureT *signature) {
+        return signature;
+    }
+    template<typename SignatureT, typename ObjectT>
+    constexpr auto get_overload(SignatureT (ObjectT::*signature)) -> SignatureT(ObjectT::*) {
+        return signature;
+    }
 }
 
 #endif// BONGOMOUNTAIN_TYPE_TRAITS_HPP

@@ -12,21 +12,21 @@ namespace core
     class BM_CORE_DCL Log
     {
     public:
-        Log(const Log &) = delete;
+        Log(const Log &)            = delete;
         Log &operator=(const Log &) = delete;
-        virtual ~Log() noexcept     = default;
+        Log() noexcept;
+        ~Log() noexcept;
 
-        static inline std::optional<spdlog::logger> &coreLogger() noexcept { return s_instance.m_coreLogger; }
-        static inline std::optional<spdlog::logger> &appLogger() noexcept { return s_instance.m_appLogger; }
+        static inline std::optional<spdlog::logger> &coreLogger() noexcept { return s_instance->m_coreLogger; }
+        static inline std::optional<spdlog::logger> &appLogger() noexcept { return s_instance->m_appLogger; }
 
         static const std::shared_ptr<spdlog::logger> &get(std::string_view name);
         static void set(const std::string &name, std::shared_ptr<spdlog::logger> logger);
 
     private:
-        Log() noexcept;
         static void configure_sink(spdlog::logger &logger);
 
-        static Log s_instance;
+        static Log *s_instance;
 
         std::optional<spdlog::logger> m_coreLogger = std::nullopt;
         std::optional<spdlog::logger> m_appLogger  = std::nullopt;

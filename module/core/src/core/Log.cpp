@@ -4,7 +4,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include "memory.hpp"
 
-core::Log core::Log::s_instance;
+core::Log *core::Log::s_instance;
 
 core::Log::Log() noexcept
 {
@@ -16,17 +16,22 @@ core::Log::Log() noexcept
     configure_sink(*m_appLogger);
     m_coreLogger->set_level(spdlog::level::trace);
     m_appLogger->set_level(spdlog::level::trace);
+    s_instance = this;
+}
+
+core::Log::~Log() noexcept {
+    s_instance = nullptr;
 }
 
 const std::shared_ptr<spdlog::logger> &core::Log::get(std::string_view name)
 {
-    auto iter = s_instance.m_custom.find(name);
-    if(iter != s_instance.m_custom.end())
+    auto iter = s_instance->m_custom.find(name);
+    if(iter != s_instance->m_custom.end())
         return iter->second;
 
-    auto        logger = fixe_string(name, [](auto string_name) { return std::make_shared<spdlog::logger>(string_name.data());});
+    auto        logger = fixe_string([](auto string_name) { return std::make_shared<spdlog::logger>(string_name.data());}, name);
     configure_sink(*logger);
-    return s_instance.m_custom.emplace(name, std::move(logger) ).first->second;
+    return s_instance->m_custom.emplace(name, std::move(logger) ).first->second;
 }
 
 void core::Log::configure_sink(spdlog::logger &logger)
@@ -45,5 +50,5 @@ void core::Log::configure_sink(spdlog::logger &logger)
 
 void core::Log::set(const std::string &name, std::shared_ptr<spdlog::logger> logger)
 {
-    s_instance.m_custom.insert_or_assign(name, std::move(logger));
+    s_instance->m_custom.insert_or_assign(name, std::move(logger));
 }

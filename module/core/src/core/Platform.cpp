@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Library.hpp"
 #include "Assert.hpp"
+#include <event/Event.hpp>
 
 core::ExtensionManager::~ExtensionManager() { unload(); }
 
@@ -61,7 +62,7 @@ void core::ExtensionManager::addLayer(std::shared_ptr<Layer> &&layer)
         std::sort(m_layers.begin(), m_layers.end(), CompareLayer<>{});
 }
 
-void core::Platform::dispatchEvent(Event &event)
+void core::ExtensionManager::dispatchEvent(Event &event)
 {
     for(auto &module : getLayers())
     {
@@ -75,6 +76,4 @@ core::Platform::Platform(int argc, const char **argv)
     BM_CORE_INFO("Initialize Platform");
     BM_CORE_ASSERT(argc, "No argument to platform!");
     m_executable = argv[0];
-
-    load(m_executable.parent_path().append("extension"), m_config);
 }

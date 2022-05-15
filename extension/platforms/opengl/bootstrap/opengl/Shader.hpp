@@ -44,14 +44,14 @@ namespace opengl
 
         int getAttributeLocation(std::string_view name) const noexcept
         {
-            return fixe_string(name,
-                               [this](auto sname) { return glGetAttribLocation(program.getResource(), sname.data()); });
+            return fixe_string([this](auto sname) { return glGetAttribLocation(program.getResource(), sname.data()); },
+                               name);
         }
 
         int getUniformLocation(std::string_view name) const noexcept
         {
-            return fixe_string(
-                name, [this](auto sname) { return glGetUniformLocation(program.getResource(), sname.data()); });
+            return fixe_string([this](auto sname) { return glGetUniformLocation(program.getResource(), sname.data()); },
+                               name);
         }
 
         static void setUniformValue(int i, const glm::mat4 &mat) noexcept

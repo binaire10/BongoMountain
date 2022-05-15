@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 #include <core/Log.hpp>
 #include <core/Assert.hpp>
+#include <event/QueryServiceProvider.hpp>
 
 #include <core/config.hpp>
 
@@ -132,7 +133,9 @@ namespace
         void make_current() override { GLFWHandler::make_current(); }
         void flush() override { GLFWHandler::flush(); }
         void clear() override { GLFWHandler::clear(); }
-        void drawTriangles(const render::VertexBufferObject &vbo, const render::VertexLayout &vao, unsigned count) override
+        void drawTriangles(const render::VertexBufferObject &vbo,
+                           const render::VertexLayout       &vao,
+                           unsigned                          count) override
         {
             GLFWHandler::drawTriangles(vbo, vao, count);
         }
@@ -190,7 +193,9 @@ namespace
         void hide() override { GLFWHandler::hide(); }
         void flush() override { GLFWHandler::flush(); }
         void clear() override { GLFWHandler::clear(); }
-        void drawTriangles(const render::VertexBufferObject &vbo, const render::VertexLayout &vao, unsigned count) override
+        void drawTriangles(const render::VertexBufferObject &vbo,
+                           const render::VertexLayout       &vao,
+                           unsigned                          count) override
         {
             GLFWHandler::drawTriangles(vbo, vao, count);
         }
@@ -286,6 +291,18 @@ namespace
                         query.setHandle(bool(query.getRenderDevice()));
                     }
                 });
+                dispatcher.dispatch<QueryGenericServiceEvent>([this](QueryGenericServiceEvent &query) {
+                    QueryServiceProvider provider{ query };
+                    provider.provide<render::RenderDevice>(
+                        [this](const std::optional<std::any> &optInfo) -> std::unique_ptr<render::RenderDevice> {
+                            if(optInfo)
+                            {
+                                auto *info = std::any_cast<const render::RenderDeviceInfo *>(*optInfo);
+                                return createRenderDevice(*info);
+                            }
+                            return nullptr;
+                        });
+                });
             }
         }
 
@@ -320,9 +337,11 @@ namespace
             glfwWindowHint(GLFW_VISIBLE, query.window && query.window->isVisible ? 1 : 0);
 
             std::string_view title = query.window ? query.window->name : "";
-            GLFWwindow      *win   = fixe_string(title, [&query](auto str) {
-                return glfwCreateWindow(query.width, query.height, str.data(), nullptr, nullptr);
-                   });
+            GLFWwindow      *win   = fixe_string(
+                [&query](auto str) {
+                    return glfwCreateWindow(query.width, query.height, str.data(), nullptr, nullptr);
+                },
+                title);
             if(!win)
                 return nullptr;
 
@@ -338,7 +357,8 @@ namespace
     };
 }// namespace
 
-extern "C" {
+extern "C"
+{
 BM_EXPORT_DCL void initialize(core::ExtensionManager &e, const nlohmann::json &configs)
 {
     e.addLayer(std::make_unique<Module<GLADLayer>>());

@@ -1,7 +1,7 @@
 #ifndef BONGOMOUNTAIN_LAYER_HPP
 #define BONGOMOUNTAIN_LAYER_HPP
 
-#include <event/Event.hpp>
+class Event;
 
 namespace core
 {
@@ -11,6 +11,8 @@ namespace core
         constexpr explicit Layer(int priority = 0)
             : priority{ priority }
         {}
+
+        virtual ~Layer() = default;
 
         virtual void onAttach()            = 0;
         virtual void onDetach()            = 0;
