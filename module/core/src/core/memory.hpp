@@ -8,7 +8,7 @@
 namespace
 {
     template<typename TypeT>
-    requires std::is_nothrow_destructible_v<TypeT> && std::is_nothrow_constructible_v<TypeT>
+        requires std::is_nothrow_destructible_v<TypeT> && std::is_nothrow_constructible_v<TypeT>
     struct safe_alloca_guard
     {
         safe_alloca_guard(const safe_alloca_guard &)     = delete;
@@ -27,7 +27,7 @@ namespace
             _freea(data);
         }
 
-        TypeT *     data;
+        TypeT      *data;
         std::size_t count;
     };
 }// namespace
@@ -42,13 +42,45 @@ namespace
 #endif
 
 template<typename Callback, typename CharT, typename TraitT>
-auto fixe_string(std::basic_string_view<CharT, TraitT> str, Callback f) {
-    if(!TraitT::eq(*(str.data() + str.size()), TraitT::to_char_type(0))) {
-        BM_STACK_ARRAY(CharT, fixed, str.size() + 1);
+auto fixe_string(Callback f, std::basic_string_view<CharT, TraitT> str)
+{
+    if(!TraitT::eq(*(str.data() + str.size()), TraitT::to_char_type(0)))
+    {
+        BM_STACK_ARRAY(char, fixed, str.size() + 1);
         *std::copy(str.begin(), str.end(), fixed) = TraitT::to_char_type(0);
-        return f(std::basic_string_view<CharT, TraitT>{fixed, str.size()});
+        return f(std::basic_string_view<CharT, TraitT>{ fixed, str.size() });
     }
     return f(str);
+}
+
+template<typename Callback, typename CharT, typename TraitT, typename... StringsT>
+auto fixe_string(Callback f, std::basic_string_view<CharT, TraitT> str, StringsT... strs)
+{
+    if(!TraitT::eq(*(str.data() + str.size()), TraitT::to_char_type(0)))
+    {
+        BM_STACK_ARRAY(char, fixed, str.size() + 1);
+        *std::copy(str.begin(), str.end(), fixed) = TraitT::to_char_type(0);
+        return fixe_string(
+            [f, fixed, size = str.size()](auto... strarg) {
+                return f(std::basic_string_view<CharT, TraitT>{ fixed, size }, strarg...);
+            },
+            std::forward<StringsT>(strs)...);
+    }
+    return fixe_string([f, str](auto... strarg) { return f(str, strarg...); }, std::forward<StringsT>(strs)...);
+}
+
+template<typename Callback, typename T, typename... StringsT>
+auto fixe_string(Callback f, T &&str, StringsT... strs)
+{
+    return fixe_string([f, str](auto... strarg) { return f(str, std::forward<decltype(strarg)>(strarg)...); },
+                       std::forward<StringsT>(strs)...);
+}
+
+template<typename Callback, typename T, typename... StringsT>
+auto fixe_string(Callback f, T &str, StringsT... strs)
+{
+    return fixe_string([f, str](auto... strarg) { return f(str, std::forward<decltype(strarg)>(strarg)...); },
+                       std::forward<StringsT>(strs)...);
 }
 
 #endif// GAMEENGINEBONGO_MEMORY_HPP
