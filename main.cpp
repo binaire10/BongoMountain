@@ -67,8 +67,9 @@ int main(int argc, const char **argv)
     static constexpr glm::vec2 array_data[]{ glm::vec2{ 0, 0 }, glm::vec2{ 2, 0 }, glm::vec2{ 0, 2 } };
     static constexpr auto      layout =
         render::make_layout(render::AttributeLayout{ "aPos", render::ShaderDataType::Float2 });
+    core::Log      log;
     core::Platform platform{ argc, argv };
-
+    platform.load(platform.getApplicationPath().parent_path().append("extension"));
     platform.attach();
     {
         auto device = graphic::createRenderDevice(platform, deviceInfo);
@@ -77,8 +78,8 @@ int main(int argc, const char **argv)
         device->make_current();
         device->clear();
 
-        auto vbo = device->createVertexBuffer(array_data);
-        auto vao = device->createVertexLayout(layout);
+        auto vbo    = device->createVertexBuffer(array_data);
+        auto vao    = device->createVertexLayout(layout);
         auto shader = device->createShaderFromCode(shaderSource);
 
         shader.bind();
@@ -93,12 +94,6 @@ int main(int argc, const char **argv)
         shader.setUniformValue(timeLocation, 0.f);
 
         device->drawTriangles(vbo, vao, std::size(array_data));
-        {
-            auto image = graphic::Image::createFromStream(
-                platform, std::ifstream{ "binaire_laboratories.jpg", std::ios::binary | std::ios::in });
-            if(image.empty())
-                BM_WARNING("no image loaded");
-        }
         device->flush();
         sleep(5);
     }
