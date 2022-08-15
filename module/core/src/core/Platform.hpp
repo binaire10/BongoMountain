@@ -8,7 +8,7 @@
 #include <nlohmann/json.hpp>
 
 #include "config.hpp"
-#include "Library.hpp"
+#include "Module.hpp"
 #include "Layer.hpp"
 #include "functional.hpp"
 
@@ -44,7 +44,7 @@ namespace core
     private:
         bool                                m_isAttached = false;
         std::vector<std::shared_ptr<Layer>> m_layers;
-        std::vector<Library>                m_libraries;
+        std::vector<Module>                 m_modules;
     };
 
     class BM_CORE_DCL Platform : public ExtensionManager

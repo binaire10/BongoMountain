@@ -16,6 +16,7 @@ target_sources(Core PRIVATE
         event/QueryServiceEvent.hpp
         event/QueryServiceEvent.cpp
         event/QueryServiceProvider.hpp
+        core/Module.hpp
         )
 target_include_directories(Core PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_link_libraries(Core PUBLIC spdlog::spdlog nlohmann_json::nlohmann_json)

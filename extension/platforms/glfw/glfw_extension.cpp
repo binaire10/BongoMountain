@@ -7,6 +7,7 @@
 #include <glad_loader.hpp>
 #include <GLFW/glfw3.h>
 #include <core/Log.hpp>
+#include <core/Module.hpp>
 #include <core/Assert.hpp>
 #include <event/QueryServiceProvider.hpp>
 
@@ -247,12 +248,12 @@ namespace
     }
 
     template<typename LoaderGL>
-    class Module
+    class GLFW_LAYER
         : public core::Layer
         , private LoaderGL
     {
     public:
-        constexpr Module()
+        constexpr GLFW_LAYER()
             : Layer{ -100 }
         {}
 
@@ -359,8 +360,12 @@ namespace
 
 extern "C"
 {
-BM_EXPORT_DCL void initialize(core::ExtensionManager &e, const nlohmann::json &configs)
+
+BM_EXPORT_DCL core::Module createModule(std::filesystem::path path, core::Library &&loader, const nlohmann::json &)
 {
-    e.addLayer(std::make_unique<Module<GLADLayer>>());
+    return core::Module{
+        "GLFW-GLAD", path, std::move(loader),
+        std::make_unique<core::ServiceLoaderInstance<core::BindInterface<core::Layer, GLFW_LAYER<GLADLayer>>>>()
+    };
 }
 }
