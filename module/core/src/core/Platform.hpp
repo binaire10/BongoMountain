@@ -54,8 +54,14 @@ namespace core
 
         const std::filesystem::path &getApplicationPath() { return m_executable; }
 
+        static Platform &getInstance() {
+            return *instance;
+        }
+
     private:
         std::filesystem::path m_executable;
+
+        static Platform *instance;
     };
 }// namespace core
 

@@ -3,6 +3,7 @@
 #include "Library.hpp"
 #include "Assert.hpp"
 #include <event/Event.hpp>
+#include "Module.hpp"
 
 core::ExtensionManager::~ExtensionManager() { unload(); }
 
@@ -83,9 +84,13 @@ void core::ExtensionManager::dispatchEvent(Event &event)
             break;
     }
 }
+
+core::Platform *core::Platform::instance;
+
 core::Platform::Platform(int argc, const char **argv)
 {
     BM_CORE_INFO("Initialize Platform");
     BM_CORE_ASSERT(argc, "No argument to platform!");
     m_executable = argv[0];
+    instance = this;
 }
