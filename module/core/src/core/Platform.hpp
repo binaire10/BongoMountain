@@ -11,6 +11,7 @@
 #include "Module.hpp"
 #include "Layer.hpp"
 #include "functional.hpp"
+#include "Assert.hpp"
 
 namespace core
 {
@@ -54,7 +55,8 @@ namespace core
 
         const std::filesystem::path &getApplicationPath() { return m_executable; }
 
-        static Platform &getInstance() {
+        static inline Platform &getInstance() {
+            BM_CORE_ASSERT(instance);
             return *instance;
         }
 

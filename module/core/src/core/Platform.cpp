@@ -85,7 +85,7 @@ void core::ExtensionManager::dispatchEvent(Event &event)
     }
 }
 
-core::Platform *core::Platform::instance;
+core::Platform *core::Platform::instance = nullptr;
 
 core::Platform::Platform(int argc, const char **argv)
 {
