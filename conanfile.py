@@ -1,30 +1,72 @@
 import os
-from conans import ConanFile, CMake, tools
+from conan import ConanFile
+from conan.tools.cmake import CMakeDeps, CMakeToolchain, CMake, cmake_layout
+from conan.tools.files import copy
 
 
 class BongoMountainConan(ConanFile):
     name = "BongoMountain"
     version = "0.0.0"
-    license = "<Put the package license here>"
-    author = "<Put your name here> <And your email here>"
-    url = "<Package recipe repository url here, for issues about the package>"
-    description = "<Description of BongoMountain here>"
-    topics = ("<Put some tag here>", "<here>", "<and here>")
     settings = "os", "compiler", "build_type", "arch"
-    requires = "glfw/3.3.6", "glad/0.1.34", "glm/0.9.9.8", "imgui/1.86", "spdlog/1.9.2", "benchmark/1.6.0", "easy_profiler/2.1.0", "nlohmann_json/3.10.5", "stb/cci.20210910"
     options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = {"shared": False, "fPIC": True, "glad:gl_version": 4.5, "glad:shared": True, "imgui:shared": True,
-                       "glfw:shared": True, "easy_profiler:shared": True, "spdlog:shared": True}
-    generators = "cmake_find_package_multi", "cmake_paths"
+    default_options = {"shared": False, "fPIC": True, "glad/*:gl_version": 4.5, "glad/*:shared": True,
+                       "imgui/*:shared": True,
+                       "glfw/*:shared": True, "spdlog/*:shared": True}
+    build_type = "Release"
     no_copy_source = True
 
+    def requirements(self):
+        self.requires("glfw/3.4")
+        self.requires("glad/0.1.36")
+        self.requires("glm/1.0.1")
+        self.requires("imgui/1.91.8")
+        self.requires("spdlog/1.15.1")
+        self.requires("benchmark/1.9.1")
+        self.requires("nlohmann_json/3.12.0")
+        self.requires("stb/cci.20240531")
     def config_options(self):
-        if self.settings.os == "Windows":
-            del self.options.fPIC
+        if self.settings.get_safe("os") == "Windows":
+            self.options.rm_safe("fPIC")
+
+    def layout(self):
+        cmake_layout(self)
+
+    def generate(self):
+        if self.build_folder is None:
+            bindings_dir = "bindings"
+        else:
+            bindings_dir = os.path.join(self.build_folder, "bindings")
+        imgui_folder = self.dependencies["imgui"].package_folder
+        copy(self, "imgui_impl_glfw.cpp", src=os.path.join(imgui_folder, "res/bindings"), dst=bindings_dir)
+        copy(self, "imgui_impl_glfw.h", src=os.path.join(imgui_folder, "res/bindings"), dst=bindings_dir)
+        copy(self, "imgui_impl_opengl3.cpp", src=os.path.join(imgui_folder, "res/bindings"), dst=bindings_dir)
+        copy(self, "imgui_impl_opengl3.h", src=os.path.join(imgui_folder, "res/bindings"), dst=bindings_dir)
+        copy(self, "imgui_impl_opengl3_loader.h", src=os.path.join(imgui_folder, "res/bindings"), dst=bindings_dir)
+
+        copy(self, "*.so", src="./bin", dst=os.path.join(bindings_dir,"bin"))
+        copy(self, "*.dll", src="./bin", dst=os.path.join(bindings_dir,"bin"))
+        copy(self, "*.exe", src="./bin", dst=os.path.join(bindings_dir,"bin"))
+
+
+        for r, d in self.dependencies.items():
+            if d.package_folder is None:
+                continue
+            # look for .dlls and .exes in the bin folder
+            copy(self, "*.so",  src=os.path.join(d.package_folder, "bin"), dst=os.path.join(self.build_folder,"bin"))
+            copy(self, "*.dll", src=os.path.join(d.package_folder, "bin"), dst=os.path.join(self.build_folder,"bin"))
+            copy(self, "*.exe", src=os.path.join(d.package_folder, "bin"), dst=os.path.join(self.build_folder,"bin"))
+
+        cmake = CMakeDeps(self)
+        cmake.generate()
+
+        tc = CMakeToolchain(self)
+        tc.variables["IMGUI_SRC_DIR"] = bindings_dir.replace("\\", "/")
+        tc.generate()
+
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure(source_folder=self.source_folder)
+        cmake.configure()
         cmake.build()
 
     def package(self):
@@ -34,16 +76,3 @@ class BongoMountainConan(ConanFile):
     def package_info(self):
         self.cpp_info.libs = []
 
-    def imports(self):
-        if self.build_folder is None:
-            bindings_dir = "bindings"
-        else:
-            bindings_dir = os.path.join(self.build_folder, "bindings")
-        self.copy("imgui_impl_glfw.cpp", src="./res/bindings", dst=bindings_dir)
-        self.copy("imgui_impl_glfw.h", src="./res/bindings", dst=bindings_dir)
-        self.copy("imgui_impl_opengl3.cpp", src="./res/bindings", dst=bindings_dir)
-        self.copy("imgui_impl_opengl3.h", src="./res/bindings", dst=bindings_dir)
-        self.copy("imgui_impl_opengl3_loader.h", src="./res/bindings", dst=bindings_dir)
-
-        self.copy("*.dll", src="./bin", dst="./bin")
-        self.copy("*.exe", src="./bin", dst="./bin")

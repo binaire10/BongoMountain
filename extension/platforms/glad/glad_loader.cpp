@@ -98,8 +98,8 @@ void GLADLayer::initialize(GLADloadproc loader)
         else
             GLAD_WARNING("opengl debug not use");
 #endif
-        GLAD_INFO("Vendor : {0}", glGetString(GL_VENDOR));
-        GLAD_INFO("GPU : {0}", glGetString(GL_RENDERER));
-        GLAD_INFO("OpenGL version : {0}", glGetString(GL_VERSION));
+        GLAD_INFO("Vendor : {0}", reinterpret_cast<const char *>(glGetString(GL_VENDOR)));
+        GLAD_INFO("GPU : {0}", reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
+        GLAD_INFO("OpenGL version : {0}", reinterpret_cast<const char *>(glGetString(GL_VERSION)));
     }
 }
