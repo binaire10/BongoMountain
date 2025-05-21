@@ -1,7 +1,7 @@
 #ifndef BONGOMOUNTAIN_MEMORY_HPP
 #define BONGOMOUNTAIN_MEMORY_HPP
 
-#ifdef _MSC_BUILD
+#if defined( _MSC_BUILD) or defined(__clang__)
 #    include <malloc.h>
 #    include <core/Assert.hpp>
 
