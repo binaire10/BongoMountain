@@ -195,6 +195,18 @@ namespace core
         std::atomic_uint *counter;
         T                 data;
     };
+    template<auto deleter>
+    struct labda_deleter
+    {
+        template<typename T>
+        inline void operator()(T *pkey)
+        {
+            if(pkey)
+            {
+                deleter(pkey);
+            }
+        }
+    };
 }// namespace core
 
 #endif// BONGOMOUNTAIN_RESSOURCE_HPP

@@ -10,6 +10,7 @@ find_package(spdlog CONFIG)
 find_package(easy_profiler CONFIG)
 find_package(nlohmann_json CONFIG)
 find_package(stb CONFIG)
+find_package(OpenSSL COMPONENTS Crypto CONFIG)
 
 
 function(configure_binary_output target)
