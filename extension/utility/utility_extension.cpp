@@ -14,68 +14,86 @@
 
 namespace
 {
-    struct stb_image_trait
+    class Module : public core::Layer
     {
-        template<typename... ArgT>
-        static stbi_uc *create(ArgT... arg)
+    public:
+        void onAttach() override { UTILITY_INFO("Attach"); }
+        void onDetach() override { UTILITY_INFO("Detach"); }
+        void onBegin() override {}
+        void onEnd() override {}
+        void onUpdate() override {}
+        void onEvent(Event &event) override
         {
-            return stbi_load_from_callbacks(std::forward<ArgT>(arg)...);
+            using graphic::event::ReadImage;
+            EventDispatcher dispatcher{ event };
+            dispatcher.dispatch<ReadImage>([](ReadImage &event) { event.setImage(Module::load(event.getStream())); });
         }
 
-        static void destroy(stbi_uc *ptr) { stbi_image_free(ptr); }
+    private:
+        struct stb_image_trait
+        {
+            template<typename... ArgT>
+            static stbi_uc *create(ArgT... arg)
+            {
+                return stbi_load_from_callbacks(std::forward<ArgT>(arg)...);
+            }
 
-        static consteval stbi_uc *invalid_resource() { return nullptr; }
-    };
+            static void destroy(stbi_uc *ptr) { stbi_image_free(ptr); }
 
-    graphic::Image load_image(std::istream &stream)
-    {
-        using graphic::TextureFormat;
-        using graphic::Image;
-
-        if(!stream)
-            stream.exceptions(std::ios_base::failbit);
-
-        int width, height, channels;
-
-        static constexpr stbi_io_callbacks callbacks{
-            [](void *user, char *data, int size) -> int {
-                return reinterpret_cast<std::istream *>(user)->read(data, size).gcount();
-            },
-            [](void *user, int n) { reinterpret_cast<std::istream *>(user)->ignore(n); },
-            [](void *user) -> int { return reinterpret_cast<std::istream *>(user)->eof(); }
+            static consteval stbi_uc *invalid_resource() { return nullptr; }
         };
-        static_assert(std::is_trivially_constructible_v<stbi_io_callbacks>);
-        stbi_set_flip_vertically_on_load(1);
-        core::resource<stbi_uc *, stb_image_trait> stbi_data;
-        stbi_data.create(&callbacks, &stream, &width, &height, &channels, 0);
-        graphic::TextureFormat fmt = TextureFormat::UNSPECIFIED;
-        switch(channels)
+
+        static graphic::Image load(std::istream &stream)
         {
-        case 4:
-            fmt = graphic::TextureFormat::RGBA_8bit;
-            break;
-        case 3:
-            fmt = TextureFormat::RGB_8bit;
-            break;
+            using graphic::TextureFormat;
+            using graphic::Image;
+
+            if(!stream)
+                stream.exceptions(std::ios_base::failbit);
+
+            int width, height, channels;
+
+            static constexpr stbi_io_callbacks callbacks{
+                [](void *user, char *data, int size) -> int {
+                    return reinterpret_cast<std::istream *>(user)->read(data, size).gcount();
+                },
+                [](void *user, int n) { reinterpret_cast<std::istream *>(user)->ignore(n); },
+                [](void *user) -> int { return reinterpret_cast<std::istream *>(user)->eof(); }
+            };
+            static_assert(std::is_trivially_constructible_v<stbi_io_callbacks>);
+            stbi_set_flip_vertically_on_load(1);
+            core::resource<stbi_uc *, stb_image_trait> stbi_data;
+            stbi_data.create(&callbacks, &stream, &width, &height, &channels, 0);
+            graphic::TextureFormat fmt = TextureFormat::UNSPECIFIED;
+            switch(channels)
+            {
+            case 4:
+                fmt = graphic::TextureFormat::RGBA_8bit;
+                break;
+            case 3:
+                fmt = TextureFormat::RGB_8bit;
+                break;
+            }
+            if(!stbi_data)
+                throw std::runtime_error{ "stbi failed to load image!" };
+
+            if(fmt == TextureFormat::UNSPECIFIED)
+                throw std::runtime_error{ "unsupported loaded image" };
+
+            Image image(width, height, fmt, reinterpret_cast<const std::byte *>(stbi_data.getResource()));
+
+            return image;
         }
-        if(!stbi_data)
-            throw std::runtime_error{ "stbi failed to load image!" };
-
-        if(fmt == TextureFormat::UNSPECIFIED)
-            throw std::runtime_error{ "unsupported loaded image" };
-
-        Image image(width, height, fmt, reinterpret_cast<const std::byte *>(stbi_data.getResource()));
-
-        return image;
-    }
+    };
 }// namespace
 
 
-extern "C"
+extern "C" {
+BM_EXPORT_DCL void initialize(core::RepositoryBindings &e, const nlohmann::json &configs)
 {
-BM_EXPORT_DCL core::Module createModule(std::filesystem::path path, core::Library &&loader, const nlohmann::json &)
-{
-    return core::Module{ "Utility", path, std::move(loader),
-                         std::make_unique<core::ServiceLoaderInstance<>>() };
+    using namespace core;
+    using module_binding = factory::define_type<Module()>::bind<core::Layer>::make;
+    e.register_factory<make_factory::add<module_binding>::build>();
+//    e.addLayer(std::make_unique<Module>());
 }
 }

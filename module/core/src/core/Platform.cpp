@@ -18,23 +18,28 @@ core::ExtensionManager::~ExtensionManager() { unload(); }
 void core::ExtensionManager::load(const std::filesystem::path &path_dir, const nlohmann::json &configs)
 {
     BM_CORE_INFO("Load extensions in {}\nConfiguration : {}", path_dir.string(), nlohmann::to_string(configs));
-
+    RepositoryBindings repos;
     for(const auto &file : std::filesystem::directory_iterator{ path_dir })
     {
         auto &path = file.path();
         if(path.extension() == EXTENSIONS_SUFFIX)
         {
             BM_CORE_INFO("Load extension {}", path.filename().string());
-            auto &library = m_libraries.emplace_back(path.string());
-            auto  loader  = library.load<void(core::ExtensionManager &, const nlohmann::json &)>("initialize");
+            auto &library = m_libraries.emplace_back(path);
+            auto  loader  = library.load<void(core::RepositoryBindings &, const nlohmann::json &)>("initialize");
             if(!loader)
                 BM_CORE_ERROR("Invalid loader !");
             else
-                loader(*this, configs);
+                loader(repos, configs);
         }
     }
+    auto layers = repos.createAllInstance<Layer>(storage);
+    if(m_isAttached) {
+        std::sort(layers.begin(), layers.end(), CompareLayer<>{});
 
-    m_isAttached = true;
+        std::for_each(layers.begin(), layers.end(), [](auto &module) { module->onAttach(); });
+    }
+    m_layers.insert(m_layers.end(), std::make_move_iterator(layers.begin()), std::make_move_iterator(layers.end()));
 }
 
 void core::ExtensionManager::attach()
@@ -59,6 +64,8 @@ void core::ExtensionManager::unload()
         detach();
     BM_CORE_INFO("Unload extensions");
     m_layers.clear();
+    storage.clear();
+    repository.clear();
     m_libraries.clear();
 }
 

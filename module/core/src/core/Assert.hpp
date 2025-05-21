@@ -5,7 +5,7 @@
 #include "Log.hpp"
 
 #ifndef NDEBUG
-#    if defined(WIN32)
+#    if defined(WIN32) || defined(_WIN32)
 #        define BM_DEBUGBREAK() __debugbreak()
 #    elif defined(linux)
 #        include <signal.h>

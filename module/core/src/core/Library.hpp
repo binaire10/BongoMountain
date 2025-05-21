@@ -20,7 +20,7 @@ namespace core
         {
         public:
             Library() = default;
-            inline Library(const std::filesystem::path &file) { hhandle = LoadLibraryW(file.c_str()); }
+            inline explicit Library(const std::filesystem::path &file) { hhandle = LoadLibraryW(file.c_str()); }
 
             inline Library(std::string_view file)
             {

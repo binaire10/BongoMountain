@@ -7,7 +7,6 @@
 #include <glad_loader.hpp>
 #include <GLFW/glfw3.h>
 #include <core/Log.hpp>
-#include <core/Module.hpp>
 #include <core/Assert.hpp>
 #include <event/QueryServiceProvider.hpp>
 
@@ -360,12 +359,11 @@ namespace
 
 extern "C"
 {
-
-BM_EXPORT_DCL core::Module createModule(std::filesystem::path path, core::Library &&loader, const nlohmann::json &)
+BM_EXPORT_DCL void initialize(core::RepositoryBindings &e, const nlohmann::json &configs)
 {
-    return core::Module{
-        "GLFW-GLAD", path, std::move(loader),
-        std::make_unique<core::ServiceLoaderInstance<core::BindInterface<core::Layer, GLFW_LAYER<GLADLayer>>>>()
-    };
+    using namespace core;
+    using module_binding = factory::define_type<GLFW_LAYER<GLADLayer>()>::bind<core::Layer>::make;
+    e.register_factory<make_factory::add<module_binding>::build>();
+//    e.addLayer(std::make_unique<Module<GLADLayer>>());
 }
 }

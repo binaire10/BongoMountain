@@ -11,6 +11,7 @@
 #include "Library.hpp"
 #include "Layer.hpp"
 #include "functional.hpp"
+#include "DependencyManager.hpp"
 #include "Assert.hpp"
 
 namespace core
@@ -18,7 +19,7 @@ namespace core
     template<typename CompareT = std::less<int>>
     struct CompareLayer
     {
-        bool operator()(const std::shared_ptr<Layer> &a, const std::shared_ptr<Layer> &b)
+        bool operator()(const auto &a, const auto &b)
         {
             return CompareT{}(a->getPriority(), b->getPriority());
         }
@@ -42,10 +43,32 @@ namespace core
 
         [[nodiscard]] const std::vector<std::shared_ptr<Layer>> &getLayers() const { return m_layers; }
 
+        template<typename T>
+        std::shared_ptr<T> getSharedInstance() {
+            return repository.createInstance<T>(storage);
+        }
+
+        template<typename T>
+        std::unique_ptr<T> getUniqueInstance() {
+            return repository.createInstance<T>(storage);
+        }
+
+        template<typename T>
+        std::vector<std::unique_ptr<T>> geAllUniqueInstance() {
+            return repository.createAllInstance<T>(storage);
+        }
+
+        template<typename T>
+        std::vector<std::shared_ptr<T>> geAllSharedInstance() {
+            return repository.createAllInstance<T>(storage);
+        }
+
     private:
         bool                                m_isAttached = false;
         std::vector<std::shared_ptr<Layer>> m_layers;
         std::vector<Library>                m_libraries;
+        RepositoryBindings repository;
+        ObjectStorage storage;
     };
 
     class BM_CORE_DCL Platform : public ExtensionManager

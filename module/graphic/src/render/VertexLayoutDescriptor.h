@@ -3,6 +3,7 @@
 
 #include <array>
 #include <vector>
+#include <cstdint>
 #include <stdexcept>
 #include <string_view>
 

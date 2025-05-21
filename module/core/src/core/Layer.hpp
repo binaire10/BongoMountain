@@ -12,8 +12,7 @@ namespace core
             : priority{ priority }
         {}
 
-        virtual ~Layer() = default;
-
+        virtual ~Layer()                   = default;
         virtual void onAttach()            = 0;
         virtual void onDetach()            = 0;
         virtual void onBegin()             = 0;
