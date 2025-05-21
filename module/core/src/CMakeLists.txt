@@ -13,11 +13,15 @@ target_sources(Core PRIVATE
         core/functional.hpp
         core/utility.hpp
         core/utility.cpp
+        core/type_storage.hpp
+        core/DependencyManager.hpp
+        core/Buffer.hpp
+        core/config.hpp
         event/QueryServiceEvent.hpp
         event/QueryServiceEvent.cpp
         event/QueryServiceProvider.hpp
         core/Module.hpp
-        )
+)
 target_include_directories(Core PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_link_libraries(Core PUBLIC spdlog::spdlog nlohmann_json::nlohmann_json)
 target_compile_definitions(Core PUBLIC BM_SHARED_CORE PRIVATE BM_BUILD_CORE)
