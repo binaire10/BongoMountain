@@ -32,6 +32,11 @@ Most dependencies is handle by conan.
     - glfw loader with glad initializing
     - utility extension with image loader
  - Default debug helper in debug binary version
+- Factory repository
+   - Auto binding factory
+   - Array allow
+   - support std::unique_ptr and std::shared_ptr
+- Cryptographic std::streambuf implementation
 
 ## Plan Feature
  - Draw by chosen primitive type in static
