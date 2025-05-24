@@ -8,10 +8,20 @@ using namespace std::string_view_literals;
 #ifndef EXTENSIONS_SUFFIX
 #    if defined(_WIN32)
 #        define EXTENSIONS_SUFFIX ".dll"sv
-#    elif defined(_linux)
+#    elif defined(_linux) || defined(linux)
 #        define EXTENSIONS_SUFFIX ".so"sv
 #    endif
 #endif
+
+core::Platform::Platform(int argc, const char **argv)
+{
+    BM_CORE_INFO("Initialize Platform");
+    BM_CORE_ASSERT(argc, "No argument to platform!");
+    m_executable = computeApplicationPath();
+    if(m_executable.empty() && argc > 0)
+        m_executable = argv[0];
+    instance = this;
+}
 
 core::ExtensionManager::~ExtensionManager() { unload(); }
 
@@ -34,12 +44,14 @@ void core::ExtensionManager::load(const std::filesystem::path &path_dir, const n
         }
     }
     auto layers = repos.createAllInstance<Layer>(storage);
-    if(m_isAttached) {
+    if(m_isAttached)
+    {
         std::sort(layers.begin(), layers.end(), CompareLayer<>{});
 
         std::for_each(layers.begin(), layers.end(), [](auto &module) { module->onAttach(); });
     }
     m_layers.insert(m_layers.end(), std::make_move_iterator(layers.begin()), std::make_move_iterator(layers.end()));
+    repository = std::move(repos);
 }
 
 void core::ExtensionManager::attach()
@@ -89,12 +101,27 @@ void core::ExtensionManager::dispatchEvent(Event &event)
     }
 }
 
-core::Platform *core::Platform::instance = nullptr;
-
-core::Platform::Platform(int argc, const char **argv)
+std::filesystem::path core::Platform::computeApplicationPath()
 {
-    BM_CORE_INFO("Initialize Platform");
-    BM_CORE_ASSERT(argc, "No argument to platform!");
-    m_executable = argv[0];
-    instance = this;
+#if defined(_WIN32) or defined(WIN32)
+    std::string filebuffer;
+    const auto initialSize = filebuffer.capacity();
+    filebuffer.resize(initialSize > 0 ? initialSize : MAX_PATH);
+    DWORD result = 0;
+    do {
+        if(result != 0)
+        {
+            filebuffer.resize(filebuffer.size() * 2);
+        }
+        result = GetModuleFileNameA(nullptr, filebuffer.data(), filebuffer.size());
+    } while(result == filebuffer.size() && GetLastError() == ERROR_INSUFFICIENT_BUFFER);
+    filebuffer.resize(result);
+    return filebuffer;
+#elif defined(_linux) or defined(linux)
+    return std::filesystem::canonical("/proc/self/exe");
+#else
+    return {};
+#endif
 }
+
+core::Platform *core::Platform::instance = nullptr;

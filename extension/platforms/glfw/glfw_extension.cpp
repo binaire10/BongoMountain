@@ -359,7 +359,7 @@ namespace
 
 extern "C"
 {
-BM_EXPORT_DCL void initialize(core::RepositoryBindings &e, const nlohmann::json &configs)
+[[maybe_unused]] BM_EXPORT_DCL void initialize(core::RepositoryBindings &e, const nlohmann::json &configs)
 {
     using namespace core;
     using module_binding = factory::define_type<GLFW_LAYER<GLADLayer>()>::bind<core::Layer>::make;

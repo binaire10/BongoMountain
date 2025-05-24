@@ -12,17 +12,15 @@
 
 namespace core
 {
-    template<std::size_t extent = std::dynamic_extent>
+    template<std::size_t extent = std::dynamic_extent, bool is_const = false>
     class ByteTransaction
     {
     public:
         using size_type      = std::uint64_t;
-        using storage_type   = std::span<std::byte, extent>;
+        using storage_type   = std::span<std::conditional_t<is_const, const std::byte, std::byte>, extent>;
         using pointer        = typename storage_type::pointer;
         using const_pointer  = typename storage_type::const_pointer;
         using iterator       = typename storage_type::iterator;
-        using const_iterator = typename storage_type::const_iterator;
-
     private:
         storage_type storage;
         iterator     pos = storage.begin();
@@ -33,10 +31,16 @@ namespace core
         {}
 
         template<typename T, std::size_t ex = std::dynamic_extent>
-            requires std::is_trivial_v<T>
+            requires (std::is_trivial_v<T> and not is_const)
         explicit ByteTransaction(std::span<T, ex> view)
             : ByteTransaction(std::as_writable_bytes(view))
         {}
+
+                template<typename T, std::size_t ex = std::dynamic_extent>
+                    requires (std::is_trivial_v<T> and is_const)
+                explicit ByteTransaction(std::span<T, ex> view)
+                    : ByteTransaction(std::as_bytes(view))
+                {}
 
         template<typename T>
             requires std::is_trivial_v<T>
@@ -91,16 +95,13 @@ namespace core
         const_pointer data() const && noexcept     = delete;
         const_pointer position() const && noexcept = delete;
 
-        const_iterator begin() const && = delete;
-        const_iterator end() const &&   = delete;
-
         iterator begin() & { return pos; }
 
         iterator end() & { return storage.end(); }
 
-        const_iterator begin() const & { return pos; }
+        iterator begin() const & { return pos; }
 
-        const_iterator end() const & { return storage.end(); }
+        iterator end() const & { return storage.end(); }
 
         size_type accept(iterator endPosition) &
         {

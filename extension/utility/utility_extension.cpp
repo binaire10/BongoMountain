@@ -6,6 +6,8 @@
 #include <core/resource.hpp>
 #include <event/EventDispatcher.hpp>
 #include <graphic/event/ReadImage.hpp>
+#include <graphic/ImageReader.hpp>
+#include <core/Buffer.hpp>
 
 #define UTILITY_PREFIX(...)    "[utility] " __VA_ARGS__
 #define UTILITY_ERROR(...)     BM_CORE_ERROR(UTILITY_PREFIX(__VA_ARGS__))
@@ -14,22 +16,9 @@
 
 namespace
 {
-    class Module : public core::Layer
+    class StbLoader : public graphic::ImageReader
     {
-    public:
-        void onAttach() override { UTILITY_INFO("Attach"); }
-        void onDetach() override { UTILITY_INFO("Detach"); }
-        void onBegin() override {}
-        void onEnd() override {}
-        void onUpdate() override {}
-        void onEvent(Event &event) override
-        {
-            using graphic::event::ReadImage;
-            EventDispatcher dispatcher{ event };
-            dispatcher.dispatch<ReadImage>([](ReadImage &event) { event.setImage(Module::load(event.getStream())); });
-        }
 
-    private:
         struct stb_image_trait
         {
             template<typename... ArgT>
@@ -43,27 +32,67 @@ namespace
             static consteval stbi_uc *invalid_resource() { return nullptr; }
         };
 
-        static graphic::Image load(std::istream &stream)
+    public:
+        size_t               minProbeSize() const noexcept override { return 0; }
+        size_t               maxProbeSize() const noexcept override { return 0; }
+        graphic::ProbeStatus accept(std::string_view filename, std::span<const std::byte> probeData) const noexcept override
+        {
+            return graphic::Filename;
+        }
+        std::optional<graphic::Image> generate(std::span<const std::byte> probeData, std::streambuf *stream) override
         {
             using graphic::TextureFormat;
             using graphic::Image;
 
-            if(!stream)
-                stream.exceptions(std::ios_base::failbit);
+            struct StreamDecoder
+            {
+                std::streambuf                                     *stream;
+                core::ByteTransaction<std::dynamic_extent, true> buffer;
+            };
 
-            int width, height, channels;
+            int                                              width, height, channels;
+
+            StreamDecoder ctx {
+                stream,
+                probeData
+            };
 
             static constexpr stbi_io_callbacks callbacks{
                 [](void *user, char *data, int size) -> int {
-                    return reinterpret_cast<std::istream *>(user)->read(data, size).gcount();
+                    int byteRead = 0;
+                    core::ByteTransaction<std::dynamic_extent> output(std::span<char>(data, size));
+                    auto context = reinterpret_cast<StreamDecoder *>(user);
+                    if(!context->buffer.full()) {
+                        auto cbyte = output.write(context->buffer.position(), context->buffer.available_bytes());
+                        context->buffer.accept(cbyte);
+                        data += cbyte;
+                        byteRead += cbyte;
+                        size -= cbyte;
+                    }
+                    auto bcount = size > 0 ? context->stream->sgetn(data, size) : 0;
+
+                    return byteRead + (bcount > 0 && byteRead > 0 ? 0 : bcount);
                 },
-                [](void *user, int n) { reinterpret_cast<std::istream *>(user)->ignore(n); },
-                [](void *user) -> int { return reinterpret_cast<std::istream *>(user)->eof(); }
+                [](void *user, int n) {
+                    auto context = reinterpret_cast<StreamDecoder *>(user);
+                    if(!context->buffer.full()) {
+                        auto byteRead = std::min(std::int64_t(n), std::int64_t(context->buffer.available_bytes()));
+                        context->buffer.accept(byteRead);
+                        n -= byteRead;
+                    }
+                    if(n != 0) {
+                        context->stream->pubseekoff(n, std::ios::cur, std::ios::in);
+                    }
+                },
+                [](void *user) -> int {
+                    auto context = reinterpret_cast<StreamDecoder *>(user);
+                    return context->buffer.full() && context->stream->in_avail() < 0;
+                }
             };
             static_assert(std::is_trivially_constructible_v<stbi_io_callbacks>);
             stbi_set_flip_vertically_on_load(1);
             core::resource<stbi_uc *, stb_image_trait> stbi_data;
-            stbi_data.create(&callbacks, &stream, &width, &height, &channels, 0);
+            stbi_data.create(&callbacks, &ctx, &width, &height, &channels, 0);
             graphic::TextureFormat fmt = TextureFormat::UNSPECIFIED;
             switch(channels)
             {
@@ -75,10 +104,10 @@ namespace
                 break;
             }
             if(!stbi_data)
-                throw std::runtime_error{ "stbi failed to load image!" };
+                return std::nullopt;
 
             if(fmt == TextureFormat::UNSPECIFIED)
-                throw std::runtime_error{ "unsupported loaded image" };
+                return std::nullopt;
 
             Image image(width, height, fmt, reinterpret_cast<const std::byte *>(stbi_data.getResource()));
 
@@ -88,12 +117,13 @@ namespace
 }// namespace
 
 
-extern "C" {
-BM_EXPORT_DCL void initialize(core::RepositoryBindings &e, const nlohmann::json &configs)
+extern "C"
+{
+[[maybe_unused]] BM_EXPORT_DCL void initialize(core::RepositoryBindings &e, const nlohmann::json &configs)
 {
     using namespace core;
-    using module_binding = factory::define_type<Module()>::bind<core::Layer>::make;
+    using module_binding = factory::define_type<StbLoader()>::bind<graphic::ImageReader>::make;
     e.register_factory<make_factory::add<module_binding>::build>();
-//    e.addLayer(std::make_unique<Module>());
+    //    e.addLayer(std::make_unique<Module>());
 }
 }

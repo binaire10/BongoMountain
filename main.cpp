@@ -6,6 +6,7 @@
 #include <fstream>
 #include <graphic/Image.hpp>
 #include <core/Log.hpp>
+#include "graphic/ImageLoader.hpp"
 
 constexpr std::string_view shaderSource = R"(#type vertex
 #version 330 core
@@ -71,6 +72,18 @@ int main(int argc, const char **argv)
     core::Platform platform{ argc, argv };
     platform.load(platform.getApplicationPath().parent_path().append("extension"));
     platform.attach();
+
+    graphic::ImageLoader imageLoader;
+
+    std::filebuf filebuf{};
+    filebuf.open("Checkerboard.png", std::ios::in | std::ios::binary);
+
+    auto image = imageLoader.load("Checkerboard.png", &filebuf);
+
+    if(image) {
+        BM_INFO("image is loaded success ({},{})", image->getWidth(), image->getHeight());
+    }
+
     {
         auto device = graphic::createRenderDevice(platform, deviceInfo);
         if(!device)

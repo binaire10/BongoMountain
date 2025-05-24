@@ -76,7 +76,9 @@ namespace core
     public:
         Platform(int argc, const char **argv);
 
-        const std::filesystem::path &getApplicationPath() { return m_executable; }
+        const std::filesystem::path &getApplicationPath() const {
+            return m_executable;
+        }
 
         static inline Platform &getInstance() {
             BM_CORE_ASSERT(instance);
@@ -84,6 +86,7 @@ namespace core
         }
 
     private:
+        static std::filesystem::path computeApplicationPath() ;
         std::filesystem::path m_executable;
         nlohmann::json        m_config;
         static Platform *instance;

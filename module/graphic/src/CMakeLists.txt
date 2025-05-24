@@ -11,6 +11,9 @@ target_sources(Graphic
         graphic/Image.cpp
         graphic/event/ReadImage.hpp
         graphic/event/ReadImage.cpp
+        graphic/ImageReader.hpp
+        graphic/ImageLoader.hpp
+        graphic/ImageLoader.cpp
         render/event/QueryRenderDevice.cpp
         render/event/QueryRenderDevice.hpp
         render/RenderElement.hpp

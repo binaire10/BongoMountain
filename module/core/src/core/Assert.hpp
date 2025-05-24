@@ -7,7 +7,7 @@
 #ifndef NDEBUG
 #    if defined(_WIN32) || defined(WIN32) || defined(_WIN32)
 #        define BM_DEBUGBREAK() __debugbreak()
-#    elif defined(linux)
+#    elif defined(linux) || defined(_linux)
 #        include <signal.h>
 #        define BM_DEBUGBREAK() raise(SIGTRAP)
 #    else

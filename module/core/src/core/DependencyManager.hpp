@@ -208,7 +208,16 @@ namespace core
     }
 
     struct RepositoryBindings : OpaqueRepositoryBindings
-    {
+    {   RepositoryBindings() noexcept = default;
+        RepositoryBindings(RepositoryBindings &&mmove) noexcept : factories(std::move(mmove.factories))
+        {}
+
+        RepositoryBindings &operator=(RepositoryBindings &&mmove) noexcept
+        {
+            factories = std::move(mmove.factories);
+            return *this;
+        }
+
         template<typename T>
         std::enable_if_t<std::is_base_of_v<OpaqueRepositoryBindings, T>> register_factory()
         {
