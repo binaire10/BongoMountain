@@ -43,11 +43,6 @@ class BongoMountainConan(ConanFile):
         copy(self, "imgui_impl_opengl3.h", src=os.path.join(imgui_folder, "res/bindings"), dst=bindings_dir)
         copy(self, "imgui_impl_opengl3_loader.h", src=os.path.join(imgui_folder, "res/bindings"), dst=bindings_dir)
 
-        copy(self, "*.so", src="./bin", dst=os.path.join(bindings_dir,"bin"))
-        copy(self, "*.dll", src="./bin", dst=os.path.join(bindings_dir,"bin"))
-        copy(self, "*.exe", src="./bin", dst=os.path.join(bindings_dir,"bin"))
-
-
         for r, d in self.dependencies.items():
             if d.package_folder is None:
                 continue
