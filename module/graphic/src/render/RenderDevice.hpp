@@ -46,8 +46,30 @@ namespace render
         virtual void flush()        = 0;
         virtual void clear()        = 0;
 
-        virtual void viewport(glm::vec2 size) = 0;
+        virtual void viewport(glm::vec2 size)                                                              = 0;
+        virtual void setClearColor(float red, float green, float blue, float alpha)                        = 0;
         virtual void drawTriangles(const VertexBufferObject &vbo, const VertexLayout &vao, unsigned count) = 0;
+        template<typename T>
+        std::enable_if_t<std::is_same_v<T, uint8_t> or std::is_same_v<T, uint16_t> or std::is_same_v<T, uint32_t>>
+            drawTrianglesWithIndex(const VertexBufferObject        &vbo,
+                                   const VertexLayout              &vao,
+                                   const IndexBufferObjectTyped<T> &ibo,
+                                   unsigned                         count)
+        {
+            if constexpr(std::is_same_v<T, uint8_t>)
+            {
+                drawTrianglesWithU8Index(vbo, vao, ibo, count);
+            }
+            else if constexpr(std::is_same_v<T, uint16_t>)
+            {
+                drawTrianglesWithU16Index(vbo, vao, ibo, count);
+            }
+            else if constexpr(std::is_same_v<T, uint32_t>)
+            {
+                drawTrianglesWithU32Index(vbo, vao, ibo, count);
+            }
+        }
+        virtual void drawPoints(const VertexBufferObject &vbo, const VertexLayout &vao, unsigned count) = 0;
 
         [[nodiscard]] virtual VertexBufferObject createVertexBuffer()                                   = 0;
         [[nodiscard]] virtual VertexBufferObject createVertexBuffer(std::size_t size)                   = 0;
@@ -96,23 +118,38 @@ namespace render
             return createShaderFromStream(istream);
         }
 
-        [[nodiscard]] virtual IndexBufferObject createIndexBuffer()                                   = 0;
-        [[nodiscard]] virtual IndexBufferObject createIndexBuffer(std::size_t size)                   = 0;
-        [[nodiscard]] virtual IndexBufferObject createIndexBuffer(const void *data, std::size_t size) = 0;
+        [[nodiscard]] virtual IndexBufferObject createIndexBuffer()                 = 0;
+        [[nodiscard]] virtual IndexBufferObject createIndexBuffer(std::size_t size) = 0;
 
         template<typename T, std::size_t length>
-        [[nodiscard]] inline IndexBufferObject createIndexBuffer(const T (&data)[length])
+        [[nodiscard]] inline IndexBufferObjectTyped<T> createIndexBuffer(const T (&data)[length])
         {
-            return createIndexBuffer(static_cast<const void *>(data), length * sizeof(T));
+            return IndexBufferObjectTyped<T>{ createIndexBuffer(static_cast<const void *>(data), length * sizeof(T)) };
         }
 
         template<typename T>
-        [[nodiscard]] inline IndexBufferObject createIndexBuffer(const T *data, std::size_t length)
+        [[nodiscard]] inline IndexBufferObjectTyped<T> createIndexBuffer(const T *data, std::size_t length)
         {
-            return createIndexBuffer(static_cast<const void *>(data), length * sizeof(T));
+            return IndexBufferObjectTyped<T>{ createIndexBuffer(static_cast<const void *>(data), length * sizeof(T)) };
         }
 
     protected:
+        [[nodiscard]] virtual IndexBufferObject createIndexBuffer(const void *data, std::size_t size) = 0;
+
+        virtual void drawTrianglesWithU8Index(const VertexBufferObject &vbo,
+                                              const VertexLayout       &vao,
+                                              const IndexBufferObject  &ibo,
+                                              unsigned                  count) = 0;
+
+        virtual void drawTrianglesWithU16Index(const VertexBufferObject &vbo,
+                                               const VertexLayout       &vao,
+                                               const IndexBufferObject  &ibo,
+                                               unsigned                  count) = 0;
+
+        virtual void drawTrianglesWithU32Index(const VertexBufferObject &vbo,
+                                               const VertexLayout       &vao,
+                                               const IndexBufferObject  &ibo,
+                                               unsigned                  count) = 0;
     };
 
     class WindowRenderDevice : public RenderDevice

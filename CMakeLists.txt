@@ -12,6 +12,7 @@ find_package(nlohmann_json CONFIG)
 find_package(stb CONFIG)
 find_package(OpenSSL COMPONENTS Crypto CONFIG)
 
+add_library(extensions INTERFACE)
 
 function(configure_binary_output target)
     set_target_properties(${target}
@@ -22,11 +23,8 @@ function(configure_binary_output target)
             )
 endfunction()
 
-add_executable(main main.cpp)
-configure_binary_output(main)
-
 function(configure_plugin_output target)
-    add_dependencies(main ${target})
+    add_dependencies(extensions ${target})
     set_target_properties(${target}
             PROPERTIES
             ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -37,5 +35,4 @@ endfunction()
 
 add_subdirectory(module)
 add_subdirectory(extension)
-
-target_link_libraries(main PRIVATE Graphic)
+add_subdirectory(example)

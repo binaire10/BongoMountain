@@ -66,6 +66,10 @@ namespace core
             return repository.createAllInstance<T>(storage);
         }
 
+    protected:
+    public:
+        bool isAttached() const;
+
     private:
         bool                                m_isAttached = false;
         std::vector<std::shared_ptr<Layer>> m_layers;

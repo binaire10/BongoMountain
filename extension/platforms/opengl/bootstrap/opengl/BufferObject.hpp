@@ -71,8 +71,7 @@ namespace opengl
     };
 
     template<typename T,
-             template<typename, typename>
-             typename ResourceOwnerT,
+             template<typename, typename> typename ResourceOwnerT,
              GLenum target,
              typename ArrayTraitT = array_trait<T, target>>
     class BufferVectorObjectGeneric
@@ -80,17 +79,27 @@ namespace opengl
     public:
         using resource_handler_type = ResourceOwnerT<GLuint, detail::BufferObjectTrait>;
 
-        BufferVectorObjectGeneric()                                  = default;
-        BufferVectorObjectGeneric(const BufferVectorObjectGeneric &) = delete;
+        BufferVectorObjectGeneric()                                             = default;
+        BufferVectorObjectGeneric(const BufferVectorObjectGeneric &)            = delete;
         BufferVectorObjectGeneric &operator=(const BufferVectorObjectGeneric &) = delete;
 
-        BufferVectorObjectGeneric(BufferVectorObjectGeneric &&move)
-            : m_handle{ move.release() }
+        BufferVectorObjectGeneric(BufferVectorObjectGeneric &&move) noexcept(
+            std::is_nothrow_move_constructible_v<resource_handler_type>)
+            : m_size{ move.m_size }
+            , m_capacity{ move.m_capacity }
+            , m_handle{ move.release() }
         {}
 
-        BufferVectorObjectGeneric &operator=(BufferVectorObjectGeneric &&move) { m_handle = move.release(); }
+        BufferVectorObjectGeneric &operator=(BufferVectorObjectGeneric &&move) noexcept(
+            std::is_nothrow_move_assignable_v<resource_handler_type>)
+        {
+            m_size     = move.m_size;
+            m_capacity = move.m_capacity;
+            m_handle   = move.release();
+            return *this;
+        }
 
-        operator BufferObjectGeneric<core::resource_view, target>()
+        explicit operator BufferObjectGeneric<core::resource_view, target>()
         {
             return BufferObjectGeneric<core::resource_view, target>{ m_handle };
         }
@@ -104,42 +113,48 @@ namespace opengl
         void bind() const noexcept { glBindBuffer(target, m_handle.getResource()); }
 
         template<std::size_t len>
-        void create(const T (&data)[len])
+        void insert(std::size_t offset, const T (&data)[len])
         {
-            create(data, len);
+            insert(offset, data, len);
         }
 
-        void create(const T *data, std::size_t len)
+        void insert(std::size_t offset, const T *data, std::size_t len)
         {
-            if(m_handle)
-                m_handle.destroy();
-            m_capacity = m_size = len;
-            m_handle.create();
-            bind();
-            glBufferData(target, len * sizeof(T), data, GL_STATIC_DRAW);
-        }
+            offset                  = std::min(offset, m_size);
+            const auto     capacity = len + m_size;
+            std::vector<T> hold;
+            if(capacity > m_capacity)
+            {
+                hold              = ArrayTraitT::dump(m_handle, m_size);
+                auto new_capacity = std::max(m_size * 2, capacity);
+                *this             = create(new_capacity);
+                m_capacity        = new_capacity;
+                glBufferSubData(target, 0, offset * sizeof(T), std::data(hold));
+            }
+            else if(offset != m_size)
+            {
+                hold = ArrayTraitT::dump(m_handle, m_size);
+            }
+            glBufferSubData(target, offset * sizeof(T), len * sizeof(T), data);
+            if(offset != m_size)
+            {
+                glBufferSubData(target, (offset + len) * sizeof(T), m_size * sizeof(T), std::data(hold) + offset);
+            }
 
-        void create(std::size_t len)
-        {
-            if(m_handle)
-                m_handle.destroy();
-            m_capacity = len;
-            m_handle.create();
-            bind();
-            glBufferData(target, len * sizeof(T), nullptr, GL_DYNAMIC_DRAW);
-        }
-
-        template<std::size_t len>
-        void insert(const T (&data)[len])
-        {
-            insert(data, len);
-        }
-
-        void insert(const T *data, std::size_t len)
-        {
-            reserve(len + m_size);
-            glBufferSubData(target, m_size * sizeof(T), len * sizeof(T), data);
             m_size += len;
+        }
+
+        void erase(std::size_t offset, std::size_t len)
+        {
+            offset = std::min(offset, m_size);
+            len    = std::min(len, m_size - offset);
+            if((offset + len) != m_size)
+            {
+                auto hold = ArrayTraitT::dump(m_handle, m_size);
+                glBufferSubData(
+                    target, offset * sizeof(T), (m_size - offset - len) * sizeof(T), std::data(hold) + offset + len);
+            }
+            m_size -= len;
         }
 
         void overwrite(std::size_t offset, const T *data, std::size_t len)
@@ -153,7 +168,7 @@ namespace opengl
             {
                 auto hold         = ArrayTraitT::dump(m_handle, m_size);
                 auto new_capacity = std::max(m_size * 2, capacity);
-                create(new_capacity);
+                *this             = create(new_capacity);
                 glBufferSubData(target, 0, m_size * sizeof(T), std::data(hold));
                 m_capacity = new_capacity;
             }
@@ -195,16 +210,53 @@ namespace opengl
 
         const resource_handler_type &getHandle() const { return m_handle; }
 
-        resource_handler_type release()
+        resource_handler_type release() noexcept(std::is_nothrow_move_constructible_v<resource_handler_type>)
         {
             m_capacity = m_size = 0;
             return std::move(m_handle);
         }
 
+        static BufferVectorObjectGeneric create(std::size_t len)
+        {
+            BufferVectorObjectGeneric buffer;
+
+            if(buffer.m_handle)
+                buffer.m_handle.destroy();
+            buffer.m_capacity = len;
+            buffer.m_handle.create();
+            buffer.bind();
+            glBufferData(target, len * sizeof(T), nullptr, GL_DYNAMIC_DRAW);
+            return buffer;
+        }
+
+        static BufferVectorObjectGeneric create(const T *data, std::size_t len)
+        {
+            BufferVectorObjectGeneric buffer;
+            if(buffer.m_handle)
+                buffer.m_handle.destroy();
+            buffer.m_capacity = buffer.m_size = len;
+            buffer.m_handle.create();
+            buffer.bind();
+            glBufferData(target, len * sizeof(T), data, GL_STATIC_DRAW);
+            return buffer;
+        }
+
+        template<std::size_t len>
+        static BufferVectorObjectGeneric create(const T (&data)[len])
+        {
+            return createStatic(data, len);
+        }
+
+        [[nodiscard]] void *map() { return glMapBuffer(target, GL_READ_WRITE); }
+
+        [[nodiscard]] const void *map() const { return glMapBuffer(target, GL_READ_ONLY); }
+
+        void unmap(const void *) const { glUnmapBuffer(target); }
+
     private:
-        resource_handler_type m_handle;
         std::size_t           m_size     = 0;
         std::size_t           m_capacity = 0;
+        resource_handler_type m_handle;
 
 
         template<template<typename, typename> typename, GLenum>
@@ -221,16 +273,16 @@ namespace opengl
         template<typename T>
         using const_array_type = detail::unique_buffer_ptr<std::add_const_t<T>, target>;
 
-        using resource_handle_type = ResourceOwnerT<GLuint, detail::BufferObjectTrait>;
+        using resource_handler_type = ResourceOwnerT<GLuint, detail::BufferObjectTrait>;
 
         constexpr BufferObjectGeneric() = default;
 
-        operator BufferObjectGeneric<core::resource_view, target>()
+        explicit operator BufferObjectGeneric<core::resource_view, target>()
         {
             return BufferObjectGeneric<core::resource_view, target>{ m_handle };
         }
 
-        explicit BufferObjectGeneric(const resource_handle_type &mHandle)
+        explicit BufferObjectGeneric(const resource_handler_type &mHandle)
             : m_handle(mHandle)
         {}
 
@@ -258,7 +310,8 @@ namespace opengl
             return *this;
         }
 
-        explicit BufferObjectGeneric(resource_handle_type &&mHandle)
+        explicit BufferObjectGeneric(resource_handler_type &&mHandle) noexcept(
+            std::is_nothrow_move_constructible_v<resource_handler_type>)
             : m_handle(std::move(mHandle))
         {}
 
@@ -309,19 +362,13 @@ namespace opengl
             return buffer;
         }
 
-        [[nodiscard]] void *map() {
-            return glMapBuffer(target, GL_READ_WRITE);
-        }
+        [[nodiscard]] void *map() { return glMapBuffer(target, GL_READ_WRITE); }
 
-        [[nodiscard]] const void *map() const {
-            return glMapBuffer(target, GL_READ_ONLY);
-        }
+        [[nodiscard]] const void *map() const { return glMapBuffer(target, GL_READ_ONLY); }
 
-        void unmap(const void *) const {
-            glUnmapBuffer(target);
-        }
+        void unmap(const void *) const { glUnmapBuffer(target); }
 
-        const resource_handle_type &getHandle() const { return m_handle; }
+        const resource_handler_type &getHandle() const { return m_handle; }
 
         template<typename T>
         [[nodiscard]] const_array_type<T> getData() const noexcept
@@ -343,7 +390,7 @@ namespace opengl
         }
 
     protected:
-        resource_handle_type m_handle;
+        resource_handler_type m_handle;
     };
 
     template<GLenum target>

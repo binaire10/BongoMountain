@@ -15,7 +15,10 @@ namespace render::detail
         virtual void        create(std::size_t size)                                          = 0;
         virtual void        create(const void *data, std::size_t size)                        = 0;
         virtual void        overwrite(std::size_t offset, const void *data, std::size_t size) = 0;
+        virtual void        insert(std::size_t offset, const void *data, std::size_t size)    = 0;
         virtual void        destroy()                                                         = 0;
+        virtual void        erase(std::size_t offset, std::size_t len)                        = 0;
+        virtual std::size_t size() const                                                      = 0;
         virtual void       *map()                                                             = 0;
         virtual const void *map() const                                                       = 0;
         virtual void        unmap(const void *) const                                         = 0;

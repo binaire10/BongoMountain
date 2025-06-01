@@ -64,6 +64,8 @@ namespace
             return GL_VERTEX_SHADER;
         if(type == "fragment"sv || type == "pixel"sv)
             return GL_FRAGMENT_SHADER;
+        if(type == "geometry"sv)
+            return GL_GEOMETRY_SHADER;
         throw std::runtime_error{ "Unknown shader type!" };
     }
 

@@ -12,8 +12,11 @@ render::IndexBufferObject::~IndexBufferObject() = default;
 
 void render::IndexBufferObject::bind() const { m_handler->bind(); }
 
-void render::IndexBufferObject::create(void *data, std::size_t size) const { m_handler->create(data, size); }
+void render::IndexBufferObject::create_primitive(const void *data, std::size_t size) const
+{
+    m_handler->create(data, size);
+}
 
-void render::IndexBufferObject::create(std::size_t size) const { m_handler->create(size); }
+void render::IndexBufferObject::create_primitive(std::size_t size) const { m_handler->create(size); }
 
 void render::IndexBufferObject::destroy() { m_handler = nullptr; }

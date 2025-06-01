@@ -24,6 +24,8 @@ target_sources(Graphic
         render/VertexLayout.cpp
         render/VertexLayout.hpp
         render/VertexLayoutDescriptor.h
+        render/ParticleManager.hpp
+        render/ParticleManager.cpp
         render/private/IndexBufferObjectPrivate.hpp
         render/private/ShaderPrivate.hpp
         render/private/TexturePrivate.hpp

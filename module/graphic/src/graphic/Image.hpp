@@ -12,7 +12,7 @@ namespace graphic
     class ImageView
     {
     public:
-        constexpr ImageView(size_t width, size_t height, TextureFormat format, std::byte *data)
+        constexpr ImageView(size_t width, size_t height, TextureFormat format, const std::byte *data)
             : m_width(width)
             , m_height(height)
             , m_data(data)
@@ -29,10 +29,10 @@ namespace graphic
         constexpr bool empty() const { return m_width * m_height == 0; }
 
     private:
-        std::size_t   m_width;
-        std::size_t   m_height;
-        std::byte    *m_data;
-        TextureFormat m_format;
+        std::size_t      m_width;
+        std::size_t      m_height;
+        const std::byte *m_data;
+        TextureFormat    m_format;
     };
 
     class Image

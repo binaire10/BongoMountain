@@ -111,12 +111,12 @@ namespace
         core::Platform::getInstance().dispatchEvent(event);
     }
 
-//    void handleRefreshEvent(GLFWwindow *window)
-//    {
-//        BM_INFO("refresh");
-//        MouseMovedEvent event{ getRenderDevice(window), static_cast<float>(xPos), static_cast<float>(yPos) };
-//        core::Platform::getInstance().dispatchEvent(event);
-//    }
+    //    void handleRefreshEvent(GLFWwindow *window)
+    //    {
+    //        BM_INFO("refresh");
+    //        MouseMovedEvent event{ getRenderDevice(window), static_cast<float>(xPos), static_cast<float>(yPos) };
+    //        core::Platform::getInstance().dispatchEvent(event);
+    //    }
 
     class GLFWHandler
     {
@@ -140,6 +140,50 @@ namespace
             layout.bind();
             glDrawArrays(GL_TRIANGLES, 0, count);
         }
+
+        void drawTrianglesWithU8Index(const render::VertexBufferObject &object,
+                                      const render::VertexLayout       &layout,
+                                      const render::IndexBufferObject  &index,
+                                      unsigned                          count)
+        {
+
+            index.bind();
+            object.bind();
+            layout.bind();
+            glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_BYTE, nullptr);
+        }
+
+        void drawTrianglesWithU16Index(const render::VertexBufferObject &object,
+                                       const render::VertexLayout       &layout,
+                                       const render::IndexBufferObject  &index,
+                                       unsigned                          count)
+        {
+
+            index.bind();
+            object.bind();
+            layout.bind();
+            glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, nullptr);
+        }
+
+        void drawTrianglesWithU32Index(const render::VertexBufferObject &object,
+                                       const render::VertexLayout       &layout,
+                                       const render::IndexBufferObject  &index,
+                                       unsigned                          count)
+        {
+
+            index.bind();
+            object.bind();
+            layout.bind();
+            glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+        }
+        void drawPoints(const render::VertexBufferObject &object, const render::VertexLayout &layout, unsigned count)
+        {
+            object.bind();
+            layout.bind();
+            glDrawArrays(GL_POINTS, 0, count);
+        }
+
+        void setClearColor(float red, float green, float blue, float alpha) { glClearColor(red, green, blue, alpha); }
 
         void viewport(glm::vec2 size) { glViewport(0, 0, size.x, size.y); }
 
@@ -234,6 +278,37 @@ namespace
         {
             GLFWHandler::drawTriangles(vbo, vao, count);
         }
+        void drawTrianglesWithU8Index(const render::VertexBufferObject &vbo,
+                                      const render::VertexLayout       &vao,
+                                      const render::IndexBufferObject  &ibo,
+                                      unsigned int                      count) override
+        {
+            GLFWHandler::drawTrianglesWithU8Index(vbo, vao, ibo, count);
+        }
+        void drawTrianglesWithU16Index(const render::VertexBufferObject &vbo,
+                                       const render::VertexLayout       &vao,
+                                       const render::IndexBufferObject  &ibo,
+                                       unsigned int                      count) override
+        {
+            GLFWHandler::drawTrianglesWithU16Index(vbo, vao, ibo, count);
+        }
+        void drawTrianglesWithU32Index(const render::VertexBufferObject &vbo,
+                                       const render::VertexLayout       &vao,
+                                       const render::IndexBufferObject  &ibo,
+                                       unsigned int                      count) override
+        {
+            GLFWHandler::drawTrianglesWithU32Index(vbo, vao, ibo, count);
+        }
+        void drawPoints(const render::VertexBufferObject &vbo,
+                        const render::VertexLayout       &vao,
+                        unsigned int                      count) override
+        {
+            GLFWHandler::drawPoints(vbo, vao, count);
+        }
+        void setClearColor(float red, float green, float blue, float alpha) override
+        {
+            GLFWHandler::setClearColor(red, green, blue, alpha);
+        }
         void                       viewport(glm::vec2 size) override { GLFWHandler::viewport(size); }
         render::VertexBufferObject createVertexBuffer() override { return { this, GLFWHandler::createVertexBuffer() }; }
         render::VertexBufferObject createVertexBuffer(std::size_t size) override
@@ -275,7 +350,7 @@ namespace
         }
     };
 
-    class GLFWWindowRenderDevice
+    class GLFWWindowRenderDevice final
         : public render::WindowRenderDevice
         , protected GLFWHandler
     {
@@ -293,6 +368,37 @@ namespace
                            unsigned                          count) override
         {
             GLFWHandler::drawTriangles(vbo, vao, count);
+        }
+        void drawTrianglesWithU8Index(const render::VertexBufferObject &vbo,
+                                      const render::VertexLayout       &vao,
+                                      const render::IndexBufferObject  &ibo,
+                                      unsigned int                      count) override
+        {
+            GLFWHandler::drawTrianglesWithU8Index(vbo, vao, ibo, count);
+        }
+        void drawTrianglesWithU16Index(const render::VertexBufferObject &vbo,
+                                       const render::VertexLayout       &vao,
+                                       const render::IndexBufferObject  &ibo,
+                                       unsigned int                      count) override
+        {
+            GLFWHandler::drawTrianglesWithU16Index(vbo, vao, ibo, count);
+        }
+        void drawTrianglesWithU32Index(const render::VertexBufferObject &vbo,
+                                       const render::VertexLayout       &vao,
+                                       const render::IndexBufferObject  &ibo,
+                                       unsigned int                      count) override
+        {
+            GLFWHandler::drawTrianglesWithU32Index(vbo, vao, ibo, count);
+        }
+        void drawPoints(const render::VertexBufferObject &vbo,
+                        const render::VertexLayout       &vao,
+                        unsigned int                      count) override
+        {
+            GLFWHandler::drawPoints(vbo, vao, count);
+        }
+        void setClearColor(float red, float green, float blue, float alpha) override
+        {
+            GLFWHandler::setClearColor(red, green, blue, alpha);
         }
         void                       viewport(glm::vec2 size) override { GLFWHandler::viewport(size); }
         render::VertexBufferObject createVertexBuffer() override { return { this, GLFWHandler::createVertexBuffer() }; }
@@ -428,7 +534,7 @@ namespace
             glfwSetMouseButtonCallback(win, handleMouseButtonEvent);
             glfwSetScrollCallback(win, handleScrollEvent);
             glfwSetCursorPosCallback(win, handleCursorPosEvent);
-//            glfwSetWindowRefreshCallback(win, handleRefreshEvent);
+            //            glfwSetWindowRefreshCallback(win, handleRefreshEvent);
 
             return device;
         }

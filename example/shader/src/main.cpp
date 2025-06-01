@@ -1,9 +1,7 @@
 #include <glm/gtc/matrix_transform.hpp>
-#include <unistd.h>
 #include <render/VertexLayoutDescriptor.h>
 #include <fstream>
 #include <core/Platform.hpp>
-#include <graphic/Image.hpp>
 #include <core/Log.hpp>
 #include <event/Event.hpp>
 #include <event/EventDispatcher.hpp>
@@ -163,17 +161,6 @@ int main(int argc, const char **argv)
     platform.attach();
 
     graphic::ImageLoader imageLoader;
-
-    std::string_view filename = "Checkerboard.png";
-    std::filebuf     filebuf{};
-    filebuf.open(filename.data(), std::ios::in | std::ios::binary);
-
-    auto image = imageLoader.load(filename, &filebuf);
-
-    if(image)
-    {
-        BM_INFO("image is loaded success ({},{})", image->getWidth(), image->getHeight());
-    }
 
     platform.addLayer(std::make_shared<CustomLayer>());
 

@@ -106,6 +106,7 @@ void core::ExtensionManager::compute()
     std::for_each(m_layers.begin(), m_layers.end(), [](auto &module) { module->onUpdate(); });
     std::for_each(m_layers.rbegin(), m_layers.rend(), [](auto &module) { module->onEnd(); });
 }
+bool core::ExtensionManager::isAttached() const { return m_isAttached; }
 
 std::filesystem::path core::Platform::computeApplicationPath()
 {
@@ -134,6 +135,8 @@ core::Platform *core::Platform::instance = nullptr;
 
 void core::Platform::exec()
 {
+    if(!isAttached())
+        attach();
     running.store(true, std::memory_order_release);
     while(running.load(std::memory_order_acquire)) { compute(); }
 }

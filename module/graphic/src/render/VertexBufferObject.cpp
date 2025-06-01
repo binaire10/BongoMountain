@@ -20,4 +20,16 @@ void render::VertexBufferObject::overwrite(std::size_t offset, const void *data,
 {
     m_handler->overwrite(offset, data, size);
 }
+
 void render::VertexBufferObject::destroy() { m_handler = nullptr; }
+
+void render::VertexBufferObject::insert(std::size_t offset, const void *data, std::size_t size)
+{
+    m_handler->insert(offset, data, size);
+}
+
+void render::VertexBufferObject::erase(std::size_t offset, std::size_t size) { m_handler->erase(offset, size); }
+
+std::size_t render::VertexBufferObject::size() const { return m_handler->size(); }
+
+void render::VertexBufferObject::clear() { m_handler->erase(0, m_handler->size()); }
