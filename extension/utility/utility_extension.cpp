@@ -5,7 +5,6 @@
 #include <core/Platform.hpp>
 #include <core/resource.hpp>
 #include <event/EventDispatcher.hpp>
-#include <graphic/event/ReadImage.hpp>
 #include <graphic/ImageReader.hpp>
 #include <core/Buffer.hpp>
 

@@ -46,6 +46,7 @@ namespace render
         virtual void flush()        = 0;
         virtual void clear()        = 0;
 
+        virtual void viewport(glm::vec2 size) = 0;
         virtual void drawTriangles(const VertexBufferObject &vbo, const VertexLayout &vao, unsigned count) = 0;
 
         [[nodiscard]] virtual VertexBufferObject createVertexBuffer()                                   = 0;

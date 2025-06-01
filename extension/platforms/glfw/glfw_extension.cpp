@@ -3,12 +3,11 @@
 
 #include <core/Layer.hpp>
 #include <core/Platform.hpp>
-#include <render/event/QueryRenderDevice.hpp>
+#include <render/RenderDeviceFactory.hpp>
 #include <glad_loader.hpp>
 #include <GLFW/glfw3.h>
 #include <core/Log.hpp>
 #include <core/Assert.hpp>
-#include <event/QueryServiceProvider.hpp>
 
 #include <core/config.hpp>
 
@@ -18,13 +17,107 @@
 #include <VertexLayoutGLPrivate.hpp>
 #include <ShaderGLPrivate.hpp>
 
+#include <event/application/WindowCloseEvent.h>
+#include <event/application/WindowResizeEvent.h>
+
+#include <event/keyboard/KeyPressedEvent.h>
+#include <event/keyboard/KeyReleasedEvent.h>
+#include <event/keyboard/KeyTypedEvent.h>
+
+#include <event/mouse/MouseButtonPressedEvent.h>
+#include <event/mouse/MouseButtonReleasedEvent.h>
+#include <event/mouse/MouseMovedEvent.h>
+#include <event/mouse/MouseScrolledEvent.h>
+
 #define GLFW_PREFIX(...)    "[GLFW] " __VA_ARGS__
 #define GLFW_ERROR(...)     BM_CORE_ERROR(GLFW_PREFIX(__VA_ARGS__))
 #define GLFW_INFO(...)      BM_CORE_INFO(GLFW_PREFIX(__VA_ARGS__))
 #define GLFW_ASSERT(X, ...) BM_CUSTOM_ASSERT(GLFW_ERROR, X, __VA_ARGS__)
 
+
 namespace
 {
+    render::RenderDevice *getRenderDevice(GLFWwindow *window)
+    {
+        return reinterpret_cast<render::RenderDevice *>(glfwGetWindowUserPointer(window));
+    }
+
+    void handleResizeEvent(GLFWwindow *window, int width, int height)
+    {
+        WindowResizeEvent event{ getRenderDevice(window), static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+        core::Platform::getInstance().dispatchEvent(event);
+    }
+
+    void handleTypedEvent(GLFWwindow *window, unsigned int keycode)
+    {
+        KeyTypedEvent event{ getRenderDevice(window), static_cast<KeyCode>(keycode) };
+        core::Platform::getInstance().dispatchEvent(event);
+    }
+
+    void handleCloseEvent(GLFWwindow *window)
+    {
+        WindowCloseEvent event{ getRenderDevice(window) };
+        core::Platform::getInstance().dispatchEvent(event);
+    }
+
+    void handleKeyEvent(GLFWwindow *window, int key, int scancode, int action, int mods)
+    {
+        switch(action)
+        {
+        case GLFW_PRESS: {
+            KeyPressedEvent event(getRenderDevice(window), static_cast<KeyCode>(key), 0u);
+            core::Platform::getInstance().dispatchEvent(event);
+            break;
+        }
+        case GLFW_RELEASE: {
+            KeyReleasedEvent event(getRenderDevice(window), static_cast<KeyCode>(key));
+            core::Platform::getInstance().dispatchEvent(event);
+            break;
+        }
+        case GLFW_REPEAT: {
+            KeyPressedEvent event(getRenderDevice(window), static_cast<KeyCode>(key), 1u);
+            core::Platform::getInstance().dispatchEvent(event);
+            break;
+        }
+        }
+    }
+
+    void handleMouseButtonEvent(GLFWwindow *window, int button, int action, int mods)
+    {
+        switch(action)
+        {
+        case GLFW_PRESS: {
+            MouseButtonPressedEvent event(getRenderDevice(window), static_cast<MouseCode>(button));
+            core::Platform::getInstance().dispatchEvent(event);
+            break;
+        }
+        case GLFW_RELEASE: {
+            MouseButtonReleasedEvent event(getRenderDevice(window), static_cast<MouseCode>(button));
+            core::Platform::getInstance().dispatchEvent(event);
+            break;
+        }
+        }
+    }
+
+    void handleScrollEvent(GLFWwindow *window, double xOffset, double yOffset)
+    {
+        MouseScrolledEvent event{ getRenderDevice(window), static_cast<float>(xOffset), static_cast<float>(yOffset) };
+        core::Platform::getInstance().dispatchEvent(event);
+    }
+
+    void handleCursorPosEvent(GLFWwindow *window, double xPos, double yPos)
+    {
+        MouseMovedEvent event{ getRenderDevice(window), static_cast<float>(xPos), static_cast<float>(yPos) };
+        core::Platform::getInstance().dispatchEvent(event);
+    }
+
+//    void handleRefreshEvent(GLFWwindow *window)
+//    {
+//        BM_INFO("refresh");
+//        MouseMovedEvent event{ getRenderDevice(window), static_cast<float>(xPos), static_cast<float>(yPos) };
+//        core::Platform::getInstance().dispatchEvent(event);
+//    }
+
     class GLFWHandler
     {
     public:
@@ -47,6 +140,8 @@ namespace
             layout.bind();
             glDrawArrays(GL_TRIANGLES, 0, count);
         }
+
+        void viewport(glm::vec2 size) { glViewport(0, 0, size.x, size.y); }
 
         static std::unique_ptr<VertexBufferGLPrivate> createVertexBuffer()
         {
@@ -122,7 +217,7 @@ namespace
         GLFWwindow *window;
     };
 
-    class GLFWRenderDevice
+    class GLFWRenderDevice final
         : public render::RenderDevice
         , protected GLFWHandler
     {
@@ -139,7 +234,7 @@ namespace
         {
             GLFWHandler::drawTriangles(vbo, vao, count);
         }
-
+        void                       viewport(glm::vec2 size) override { GLFWHandler::viewport(size); }
         render::VertexBufferObject createVertexBuffer() override { return { this, GLFWHandler::createVertexBuffer() }; }
         render::VertexBufferObject createVertexBuffer(std::size_t size) override
         {
@@ -199,7 +294,7 @@ namespace
         {
             GLFWHandler::drawTriangles(vbo, vao, count);
         }
-
+        void                       viewport(glm::vec2 size) override { GLFWHandler::viewport(size); }
         render::VertexBufferObject createVertexBuffer() override { return { this, GLFWHandler::createVertexBuffer() }; }
         render::VertexBufferObject createVertexBuffer(std::size_t size) override
         {
@@ -246,10 +341,7 @@ namespace
         GLFW_ERROR("GLFW error [{0}] : {1}", errorCode, errorMsg);
     }
 
-    template<typename LoaderGL>
-    class GLFW_LAYER
-        : public core::Layer
-        , private LoaderGL
+    class GLFW_LAYER final : public core::Layer
     {
     public:
         constexpr GLFW_LAYER()
@@ -278,43 +370,15 @@ namespace
         void onBegin() override { glfwPollEvents(); }
         void onEnd() override {}
         void onUpdate() override {}
-        void onEvent(Event &event) override
-        {
-            if(event.IsInCategory(EventCategory::Layer))
-            {
-                EventDispatcher dispatcher{ event };
-                dispatcher.dispatch<render::event::QueryRenderDevice>([this](render::event::QueryRenderDevice &query) {
-                    auto *info = std::get_if<render::RenderDeviceInfo>(&query.getInfo());
-                    if(info)
-                    {
-                        query.setRenderDevice(createRenderDevice(*info));
-                        query.setHandle(bool(query.getRenderDevice()));
-                    }
-                });
-                dispatcher.dispatch<QueryGenericServiceEvent>([this](QueryGenericServiceEvent &query) {
-                    QueryServiceProvider provider{ query };
-                    provider.provide<render::RenderDevice>(
-                        [this](const std::optional<std::any> &optInfo) -> std::unique_ptr<render::RenderDevice> {
-                            if(optInfo)
-                            {
-                                auto *info = std::any_cast<const render::RenderDeviceInfo *>(*optInfo);
-                                return createRenderDevice(*info);
-                            }
-                            return nullptr;
-                        });
-                });
-            }
-        }
+        void onEvent(Event &event) override {}
+    };
 
-    protected:
-        std::unique_ptr<render::RenderDevice> createRenderDevice(const render::RenderDeviceInfo &query)
-        {
-            const render::opengl_t *render = std::get_if<render::opengl_t>(&query.render);
-            if(!render)
-                return nullptr;
-            return createOpenGLRenderDevice(query, render);
-        }
-
+    template<typename LoaderGL>
+    class GLFWFactory
+        : public render::RenderDeviceFactory
+        , private LoaderGL
+    {
+    public:
         std::unique_ptr<render::RenderDevice> createOpenGLRenderDevice(const render::RenderDeviceInfo &query,
                                                                        const render::opengl_t         *render)
         {
@@ -331,8 +395,8 @@ namespace
                           render->isCoreProfile ? "Core Profile" : "Compatible Profile");
                 if(render->isCoreProfile)
                     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_CORE_PROFILE);
-                else
-                    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_COMPAT_PROFILE);
+                //                else
+                //                    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_COMPAT_PROFILE);
             }
             glfwWindowHint(GLFW_VISIBLE, query.window && query.window->isVisible ? 1 : 0);
 
@@ -349,10 +413,32 @@ namespace
 
             LoaderGL::initialize(glfwGetProcAddress);
 
+            std::unique_ptr<render::RenderDevice> device;
             if(query.window)
-                return std::make_unique<GLFWWindowRenderDevice>(win);
+                device = std::make_unique<GLFWWindowRenderDevice>(win);
             else
-                return std::make_unique<GLFWRenderDevice>(win);
+                device = std::make_unique<GLFWRenderDevice>(win);
+
+            glfwSetWindowUserPointer(win, device.get());
+
+            glfwSetWindowSizeCallback(win, handleResizeEvent);
+            glfwSetWindowCloseCallback(win, handleCloseEvent);
+            glfwSetKeyCallback(win, handleKeyEvent);
+            glfwSetCharCallback(win, handleTypedEvent);
+            glfwSetMouseButtonCallback(win, handleMouseButtonEvent);
+            glfwSetScrollCallback(win, handleScrollEvent);
+            glfwSetCursorPosCallback(win, handleCursorPosEvent);
+//            glfwSetWindowRefreshCallback(win, handleRefreshEvent);
+
+            return device;
+        }
+
+        std::unique_ptr<render::RenderDevice> createRenderDevice(const render::RenderDeviceInfo &info) override
+        {
+            const render::opengl_t *render = std::get_if<render::opengl_t>(&info.render);
+            if(info.render.valueless_by_exception())
+                return nullptr;
+            return createOpenGLRenderDevice(info, render);
         }
     };
 }// namespace
@@ -362,8 +448,9 @@ extern "C"
 [[maybe_unused]] BM_EXPORT_DCL void initialize(core::RepositoryBindings &e, const nlohmann::json &configs)
 {
     using namespace core;
-    using module_binding = factory::define_type<GLFW_LAYER<GLADLayer>()>::bind<core::Layer>::make;
-    e.register_factory<make_factory::add<module_binding>::build>();
-//    e.addLayer(std::make_unique<Module<GLADLayer>>());
+    using module_binding = factory::define_type<GLFW_LAYER()>::bind<core::Layer>::make;
+    using render_binding = factory::define_type<GLFWFactory<GLADLayer>()>::bind<render::RenderDeviceFactory>::make;
+    e.register_factory<make_factory::add<module_binding, render_binding>::build>();
+    //    e.addLayer(std::make_unique<Module<GLADLayer>>());
 }
 }

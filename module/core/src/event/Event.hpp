@@ -14,10 +14,7 @@ enum class EventType {
     MouseMoved,
     MouseScrolled,
     MouseButtonPressed,
-    MouseButtonReleased,
-    QueryRenderDevice,
-    ReadImage,
-    QueryInterface,
+    MouseButtonReleased
 };
 
 enum class EventCategory {
@@ -66,7 +63,7 @@ private:
     std::string_view                        getName() const noexcept override;
 
 #define EVENT_CLASS_CATEGORY(X)                                                              \
-    static constexpr EventCategory getStaticCategory() noexcept { return EventCategory::X; } \
+    static constexpr EventCategory getStaticCategory() noexcept { return (X); } \
     EventCategory                  getCategory() const noexcept override;
 
 #define EVENT_CLASS(C, T) EVENT_CLASS_CATEGORY(C) EVENT_CLASS_TYPE(T)

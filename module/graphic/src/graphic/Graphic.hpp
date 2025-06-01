@@ -3,8 +3,11 @@
 
 #include <memory>
 #include "config.hpp"
-#include <core/Platform.hpp>
 #include "../render/RenderDevice.hpp"
+
+namespace core {
+    class Platform;
+}
 
 namespace graphic
 {
