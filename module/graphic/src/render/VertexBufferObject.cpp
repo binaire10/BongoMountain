@@ -1,5 +1,4 @@
 #include "VertexBufferObject.hpp"
-#include "private/VertexBufferPrivate.hpp"
 
 render::VertexBufferObject::VertexBufferObject(render::RenderDevice                          *owner,
                                                std::unique_ptr<detail::VertexBufferPrivate> &&handler)
@@ -21,4 +20,4 @@ void render::VertexBufferObject::overwrite(std::size_t offset, const void *data,
 {
     m_handler->overwrite(offset, data, size);
 }
-void render::VertexBufferObject::destroy() { m_handler->destroy(); }
+void render::VertexBufferObject::destroy() { m_handler = nullptr; }

@@ -19,10 +19,7 @@ namespace core
     template<typename CompareT = std::less<int>>
     struct CompareLayer
     {
-        bool operator()(const auto &a, const auto &b)
-        {
-            return CompareT{}(a->getPriority(), b->getPriority());
-        }
+        bool operator()(const auto &a, const auto &b) { return CompareT{}(a->getPriority(), b->getPriority()); }
     };
 
     class BM_CORE_DCL ExtensionManager
@@ -35,6 +32,8 @@ namespace core
 
         void attach();
 
+        void compute();
+
         void detach();
 
         void unload();
@@ -44,22 +43,26 @@ namespace core
         [[nodiscard]] const std::vector<std::shared_ptr<Layer>> &getLayers() const { return m_layers; }
 
         template<typename T>
-        std::shared_ptr<T> getSharedInstance() {
+        std::shared_ptr<T> getSharedInstance()
+        {
             return repository.createInstance<T>(storage);
         }
 
         template<typename T>
-        std::unique_ptr<T> getUniqueInstance() {
+        std::unique_ptr<T> getUniqueInstance()
+        {
             return repository.createInstance<T>(storage);
         }
 
         template<typename T>
-        std::vector<std::unique_ptr<T>> geAllUniqueInstance() {
+        std::vector<std::unique_ptr<T>> geAllUniqueInstance()
+        {
             return repository.createAllInstance<T>(storage);
         }
 
         template<typename T>
-        std::vector<std::shared_ptr<T>> geAllSharedInstance() {
+        std::vector<std::shared_ptr<T>> geAllSharedInstance()
+        {
             return repository.createAllInstance<T>(storage);
         }
 
@@ -67,8 +70,8 @@ namespace core
         bool                                m_isAttached = false;
         std::vector<std::shared_ptr<Layer>> m_layers;
         std::vector<Library>                m_libraries;
-        RepositoryBindings repository;
-        ObjectStorage storage;
+        RepositoryBindings                  repository;
+        ObjectStorage                       storage;
     };
 
     class BM_CORE_DCL Platform : public ExtensionManager
@@ -76,20 +79,25 @@ namespace core
     public:
         Platform(int argc, const char **argv);
 
-        const std::filesystem::path &getApplicationPath() const {
-            return m_executable;
-        }
+        const std::filesystem::path &getApplicationPath() const { return m_executable; }
 
-        static inline Platform &getInstance() {
+        static inline Platform &getInstance()
+        {
             BM_CORE_ASSERT(instance);
             return *instance;
         }
 
+        void exec();
+
+        void exit();
+
     private:
-        static std::filesystem::path computeApplicationPath() ;
+        static std::filesystem::path computeApplicationPath();
+
         std::filesystem::path m_executable;
         nlohmann::json        m_config;
-        static Platform *instance;
+        static Platform      *instance;
+        std::atomic_bool      running = false;
     };
 }// namespace core
 

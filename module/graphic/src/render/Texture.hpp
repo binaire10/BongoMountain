@@ -6,17 +6,14 @@
 #include <core/Assert.hpp>
 #include <graphic/Image.hpp>
 #include "RenderElement.hpp"
-
-namespace render::detail
-{
-    class TexturePrivate;
-}
+#include "private/TexturePrivate.hpp"
 
 namespace render
 {
     class BM_GRAPHIC_DCL Texture final : public RenderElement
     {
     public:
+        Texture() = default;
         Texture(RenderDevice *owner, std::unique_ptr<detail::TexturePrivate> &&handler);
         ~Texture() override;
 
@@ -26,6 +23,7 @@ namespace render
         void bind() const;
         void bind(unsigned unit) const;
         void create(const graphic::ImageView &imageView);
+        void destroy();
         [[nodiscard]] constexpr const std::unique_ptr<detail::TexturePrivate> &getPrivate() const { return m_handler; }
 
     private:

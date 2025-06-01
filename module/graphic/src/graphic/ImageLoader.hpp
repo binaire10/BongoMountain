@@ -3,6 +3,7 @@
 #define IMAGELOADER_HPP
 
 #include <vector>
+#include <memory>
 
 #include "Image.hpp"
 #include "ImageReader.hpp"

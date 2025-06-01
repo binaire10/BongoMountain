@@ -5,17 +5,14 @@
 #include "../graphic/config.hpp"
 #include <core/Assert.hpp>
 #include "RenderElement.hpp"
-
-namespace render::detail
-{
-    class VertexBufferPrivate;
-}
+#include "private/VertexBufferPrivate.hpp"
 
 namespace render
 {
     class BM_GRAPHIC_DCL VertexBufferObject final : public RenderElement
     {
     public:
+        VertexBufferObject() = default;
         VertexBufferObject(RenderDevice *owner, std::unique_ptr<detail::VertexBufferPrivate> &&handler);
         ~VertexBufferObject() override;
 

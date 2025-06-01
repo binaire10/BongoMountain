@@ -6,17 +6,14 @@
 #include <core/Assert.hpp>
 #include "RenderElement.hpp"
 #include "VertexLayoutDescriptor.h"
-
-namespace render::detail
-{
-    class VertexLayoutPrivate;
-}
+#include "private/VertexLayoutPrivate.hpp"
 
 namespace render
 {
     class BM_GRAPHIC_DCL VertexLayout final : public RenderElement
     {
     public:
+        VertexLayout() = default;
         VertexLayout(RenderDevice *owner, std::unique_ptr<detail::VertexLayoutPrivate> &&handler);
         ~VertexLayout() override;
 

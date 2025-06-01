@@ -3,6 +3,7 @@
 #include "ImageLoader.hpp"
 #include "ImageReader.hpp"
 #include <core/Buffer.hpp>
+#include <core/Platform.hpp>
 
 graphic::ImageLoader::~ImageLoader() {}
 

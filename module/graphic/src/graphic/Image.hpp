@@ -6,7 +6,6 @@
 
 #include "config.hpp"
 #include "TextureFormat.hpp"
-#include <core/Platform.hpp>
 
 namespace graphic
 {
@@ -79,13 +78,6 @@ namespace graphic
                                                     std::size_t offsetY,
                                                     std::size_t width,
                                                     std::size_t height);
-
-        [[nodiscard]] BM_GRAPHIC_DCL static Image createFromStream(core::Platform &platform, std::istream &stream);
-
-        [[nodiscard]] inline static Image createFromStream(core::Platform &platform, std::istream &&stream)
-        {
-            return createFromStream(platform, stream);
-        }
 
         [[nodiscard]] inline bool empty() const { return m_width * m_height == 0; }
 

@@ -17,4 +17,4 @@ void render::VertexLayout::create(const AttributeLayout *attrs, std::size_t size
 
 void render::VertexLayout::bind() const { m_handler->bind(); }
 
-void render::VertexLayout::destroy() { m_handler->destroy(); }
+void render::VertexLayout::destroy() { m_handler = nullptr; }

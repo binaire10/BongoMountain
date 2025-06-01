@@ -17,16 +17,15 @@ target_sources(Core PRIVATE
         core/DependencyManager.hpp
         core/Buffer.hpp
         core/config.hpp
+        core/Module.hpp
         crypto/Crypto.hpp
         crypto/Crypto.cpp
         crypto/SymmetricSecureStream.hpp
         crypto/SymmetricSecureStream.cpp
         crypto/AsymmetricSecureStream.hpp
         crypto/AsymmetricSecureStream.cpp
-        event/QueryServiceEvent.hpp
-        event/QueryServiceEvent.cpp
-        event/QueryServiceProvider.hpp
-        core/Module.hpp
+        event/EventDispatcher.hpp
+        event/Event.hpp
 )
 target_include_directories(Core PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 target_link_libraries(Core PUBLIC spdlog::spdlog nlohmann_json::nlohmann_json OpenSSL::Crypto)

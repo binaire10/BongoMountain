@@ -1,5 +1,4 @@
 #include "Shader.hpp"
-#include "private/ShaderPrivate.hpp"
 
 render::Shader::Shader(render::RenderDevice *owner, std::unique_ptr<detail::ShaderPrivate> &&handler)
     : RenderElement(owner)
@@ -14,7 +13,7 @@ void render::Shader::createFromStream(std::istream &code) { m_handler->createFro
 
 void render::Shader::createFromSource(std::string_view code) { m_handler->createFromSource(code); }
 
-void render::Shader::destroy() { m_handler->destroy(); }
+void render::Shader::destroy() { m_handler = nullptr; }
 
 void render::Shader::bind() const { m_handler->bind(); }
 
@@ -41,6 +40,7 @@ void render::Shader::setUniformValue(int i, int value) noexcept { m_handler->set
 void render::Shader::setUniformValue(int i, float value) noexcept { m_handler->setUniformValue(i, value); }
 
 void render::Shader::setUniformValue(int i, double value) noexcept { m_handler->setUniformValue(i, value); }
+
 void render::Shader::setUniformArray(int i, const uint32_t *array, std::size_t count) noexcept
 {
     m_handler->setUniformArray(i, array, count);

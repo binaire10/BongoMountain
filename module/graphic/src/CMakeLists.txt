@@ -9,14 +9,11 @@ target_sources(Graphic
         render/Texture.cpp
         graphic/Image.hpp
         graphic/Image.cpp
-        graphic/event/ReadImage.hpp
-        graphic/event/ReadImage.cpp
         graphic/ImageReader.hpp
         graphic/ImageLoader.hpp
         graphic/ImageLoader.cpp
-        render/event/QueryRenderDevice.cpp
-        render/event/QueryRenderDevice.hpp
         render/RenderElement.hpp
+        render/RenderDeviceFactory.hpp
         render/Shader.hpp
         render/Shader.cpp
         render/IndexBufferObject.hpp
@@ -32,6 +29,29 @@ target_sources(Graphic
         render/private/TexturePrivate.hpp
         render/private/VertexBufferPrivate.hpp
         render/private/VertexLayoutPrivate.hpp
+
+        event/application/WindowCloseEvent.cpp
+        event/application/WindowResizeEvent.cpp
+        event/application/WindowCloseEvent.h
+        event/application/WindowResizeEvent.h
+        event/keyboard/KeyEvent.cpp
+        event/keyboard/KeyPressedEvent.cpp
+        event/keyboard/KeyTypedEvent.h
+        event/keyboard/KeyPressedEvent.h
+        event/keyboard/KeyEvent.h
+        event/keyboard/KeyTypedEvent.cpp
+        event/keyboard/KeyReleasedEvent.h
+        event/keyboard/KeyReleasedEvent.cpp
+        event/mouse/MouseButtonEvent.cpp
+        event/mouse/MouseMovedEvent.h
+        event/mouse/MouseButtonEvent.h
+        event/mouse/MouseButtonPressedEvent.cpp
+        event/mouse/MouseButtonPressedEvent.h
+        event/mouse/MouseButtonReleasedEvent.h
+        event/mouse/MouseButtonReleasedEvent.cpp
+        event/mouse/MouseScrolledEvent.h
+        event/mouse/MouseScrolledEvent.cpp
+        event/mouse/MouseMovedEvent.cpp
         )
 target_link_libraries(Graphic PUBLIC Core)
 target_include_directories(Graphic PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)

@@ -23,7 +23,7 @@ namespace core
         };
 
         template<typename K, typename RetT, typename... ArgT>
-        class function_instance
+        class function_instance final
             : K
             , public function_abstract<RetT, ArgT...>
         {

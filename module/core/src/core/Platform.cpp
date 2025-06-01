@@ -86,8 +86,7 @@ void core::ExtensionManager::addLayer(std::shared_ptr<Layer> &&layer)
     auto &m = m_layers.emplace_back(std::move(layer));
     if(m_isAttached)
         m->onAttach();
-
-    if(!std::is_sorted(m_layers.begin(), m_layers.end(), CompareLayer<>{}))
+    else if(!std::is_sorted(m_layers.begin(), m_layers.end(), CompareLayer<>{}))
         std::sort(m_layers.begin(), m_layers.end(), CompareLayer<>{});
 }
 
@@ -101,11 +100,18 @@ void core::ExtensionManager::dispatchEvent(Event &event)
     }
 }
 
+void core::ExtensionManager::compute()
+{
+    std::for_each(m_layers.begin(), m_layers.end(), [](auto &module) { module->onBegin(); });
+    std::for_each(m_layers.begin(), m_layers.end(), [](auto &module) { module->onUpdate(); });
+    std::for_each(m_layers.rbegin(), m_layers.rend(), [](auto &module) { module->onEnd(); });
+}
+
 std::filesystem::path core::Platform::computeApplicationPath()
 {
 #if defined(_WIN32) or defined(WIN32)
     std::string filebuffer;
-    const auto initialSize = filebuffer.capacity();
+    const auto  initialSize = filebuffer.capacity();
     filebuffer.resize(initialSize > 0 ? initialSize : MAX_PATH);
     DWORD result = 0;
     do {
@@ -125,3 +131,11 @@ std::filesystem::path core::Platform::computeApplicationPath()
 }
 
 core::Platform *core::Platform::instance = nullptr;
+
+void core::Platform::exec()
+{
+    running.store(true, std::memory_order_release);
+    while(running.load(std::memory_order_acquire)) { compute(); }
+}
+
+void core::Platform::exit() { running.store(false, std::memory_order_release); }

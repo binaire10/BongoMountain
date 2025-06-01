@@ -85,7 +85,7 @@ namespace
             std::string_view type = code.substr(startType, eol - startType);
 
             offset                = code.find(typeToken, eol);
-            std::string_view data = offset == std::string::npos ? code.substr(eol) : code.substr(eol, offset - eol);
+            std::string_view data = offset == std::string::npos ? code.substr(eol + 1) : code.substr(eol + 1, offset - eol - 1);
             shaders.emplace(shaderTypeFromString(type),
                             std::make_pair(std::count(code.begin(), code.begin() + std::min(eol + 1, code.size()), end_line) + 1, data));
         }

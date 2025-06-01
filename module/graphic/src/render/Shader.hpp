@@ -11,17 +11,14 @@
 #include "../graphic/config.hpp"
 #include <core/Assert.hpp>
 #include "RenderElement.hpp"
-
-namespace render::detail
-{
-    class ShaderPrivate;
-}
+#include "private/ShaderPrivate.hpp"
 
 namespace render
 {
     class BM_GRAPHIC_DCL Shader final : public RenderElement
     {
     public:
+        Shader() = default;
         Shader(RenderDevice *owner, std::unique_ptr<detail::ShaderPrivate> &&handler);
         ~Shader() override;
 

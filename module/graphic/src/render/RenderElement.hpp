@@ -7,7 +7,7 @@ namespace render
     class RenderElement
     {
     public:
-        constexpr explicit RenderElement(RenderDevice *owner)
+        constexpr explicit RenderElement(RenderDevice *owner = nullptr)
             : owner(owner)
         {}
         virtual ~RenderElement() = default;
